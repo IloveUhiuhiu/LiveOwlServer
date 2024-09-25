@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface LoginServiceImp {
-    List<UserDTO> getAllUser();
-    CompletableFuture<Boolean> checkLogin(String username, String password);
+//    List<UserDTO> getAllUser();
+    CompletableFuture<Boolean> checkLogin(String email, String password);
     Boolean  addUser(SingupRequest singupRequest);
 
 }
