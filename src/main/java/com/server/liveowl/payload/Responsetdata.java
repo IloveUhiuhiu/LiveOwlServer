@@ -1,6 +1,6 @@
 package com.server.liveowl.payload;
 
-public class Responsedata {
+public class Responsetdata {
     private int status = 200;
     private String desc;
     private  Object data;

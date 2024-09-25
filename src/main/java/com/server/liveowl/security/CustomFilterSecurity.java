@@ -22,7 +22,7 @@ public class CustomFilterSecurity {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("login/**").permitAll() // Cho phép truy cập không cần xác thực
-                        .anyRequest().authenticated()  // Mọi request khác phải xác thực
+                        .anyRequest().permitAll()  // Mọi request khác phải xác thực
                 );
 
         return http.build();

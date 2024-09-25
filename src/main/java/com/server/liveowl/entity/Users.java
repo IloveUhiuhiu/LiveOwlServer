@@ -4,12 +4,13 @@ package com.server.liveowl.entity;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 public class Users {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @GeneratedValue
+    private UUID id;
 
     @Column(name = "user_name")
     private String userName;
@@ -30,11 +31,11 @@ public class Users {
     @JoinColumn(name = "role_id")
     private Roles roles;
 
-    public int getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

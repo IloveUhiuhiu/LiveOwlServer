@@ -1,18 +1,23 @@
 package com.server.liveowl.payload.request;
 
-public class SingupRequest {
-    private String username;
-    private  String email;
-    private String password;
-    private String confirmpassword;
-    private int role_id;
+import java.util.Date;
 
-    public String getUsername() {
-        return username;
+public class SingupRequest {
+
+    private String email;
+    private String password;
+    private int role;
+    private String fullname;
+    private Date dateofbirth;
+    private Boolean gender;
+
+
+    public String getEmail() {
+        return email;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -23,27 +28,35 @@ public class SingupRequest {
         this.password = password;
     }
 
-    public int getRole_id() {
-        return role_id;
+    public int getRole() {
+        return role;
     }
 
-    public void setRole_id(int role_id) {
-        this.role_id = role_id;
+    public void setRole(int role) {
+        this.role = role;
     }
 
-    public String getEmail() {
-        return email;
+    public String getFullname() {
+        return fullname;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
     }
 
-    public String getConfirmpassword() {
-        return confirmpassword;
+    public Boolean getGender() {
+        return gender;
     }
 
-    public void setConfirmpassword(String confirmpassword) {
-        this.confirmpassword = confirmpassword;
+    public void setGender(Boolean gender) {
+        this.gender = gender;
+    }
+
+    public Date getDateofbirth() {
+        return dateofbirth;
+    }
+
+    public void setDateofbirth(Date dateofbirth) {
+        this.dateofbirth = dateofbirth;
     }
 }
