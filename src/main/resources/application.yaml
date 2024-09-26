@@ -13,3 +13,6 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
 server:
   port: 9090
+
+jwt:
+  privatekey: drOdeg2KBggaSeQPl+T2V/WuQoNnVvhkwj03x/pb9z8=

@@ -2,6 +2,7 @@ package com.server.liveowl.payload;
 
 public class Responsetdata {
     private int status = 200;
+    private  Boolean issucess = true;
     private String desc;
     private  Object data;
 
@@ -27,5 +28,13 @@ public class Responsetdata {
 
     public void setData(Object data) {
         this.data = data;
+    }
+
+    public Boolean getIssucess() {
+        return issucess;
+    }
+
+    public void setIssucess(Boolean issucess) {
+        this.issucess = issucess;
     }
 }
