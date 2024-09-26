@@ -37,7 +37,8 @@ public class LoginController {
 
         if(loginServiceImp.checkLogin(email, password))
         {
-            String token = jwtUstilHelper.generateToken(email);
+            int role = loginServiceImp.getUserRole(email);
+            String token = jwtUstilHelper.generateToken(email, role);
             responsetdata.setData(token);
         }
         else
