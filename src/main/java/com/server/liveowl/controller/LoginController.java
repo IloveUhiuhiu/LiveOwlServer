@@ -3,11 +3,16 @@ package com.server.liveowl.controller;
 import com.server.liveowl.payload.Responsetdata;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.service.imp.LoginServiceImp;
+import com.server.liveowl.ustil.JwtUstilHelper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.SecretKey;
 import java.util.concurrent.CompletableFuture;
 
 @CrossOrigin("*")
@@ -18,14 +23,30 @@ public class LoginController {
     @Autowired
     LoginServiceImp loginServiceImp;
 
+    @Autowired
+    JwtUstilHelper jwtUstilHelper;
+
     @PostMapping("/singin")
-    public CompletableFuture<ResponseEntity<?>> singin(@RequestParam String email, @RequestParam String password) {
+    public ResponseEntity<?> singin(@RequestParam String email, @RequestParam String password) {
         Responsetdata responsetdata = new Responsetdata();
-        return loginServiceImp.checkLogin(email, password)
-                .thenApply(result -> {
-                    responsetdata.setData(result);
-                    return new ResponseEntity<>(responsetdata, HttpStatus.OK);
-                });
+
+        // tạo key cho api
+//        SecretKey key = Jwts.SIG.HS256.key().build(); //or HS384.key() or HS512.key()
+//        String secretString = Encoders.BASE64.encode(key.getEncoded());
+//        System.out.println(secretString);
+
+        if(loginServiceImp.checkLogin(email, password))
+        {
+            String token = jwtUstilHelper.generateToken(email);
+            responsetdata.setData(token);
+        }
+        else
+        {
+            responsetdata.setData("");
+            responsetdata.setIssucess(false);
+        }
+
+        return new ResponseEntity<>(responsetdata, HttpStatus.OK);
     }
 
     @PostMapping("/singup")
@@ -37,7 +58,7 @@ public class LoginController {
 
 //    @PostMapping("/getAllUser")
 //    public ResponseEntity<?> getAllUser() {
-//        Responsedata responsedata = new Responsedata();
+//        Responsetdata responsedata = new Responsetdata();
 //        responsedata.setData(loginServiceImp.getAllUser());
 //        return new ResponseEntity<>(responsedata, HttpStatus.OK);
 //    }

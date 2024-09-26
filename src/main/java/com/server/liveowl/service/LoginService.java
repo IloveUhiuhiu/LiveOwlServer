@@ -30,17 +30,16 @@ public class LoginService implements LoginServiceImp {
     AccountInforRepository accountInforRepository;
 
     @Override
-    @Async
-    public CompletableFuture<Boolean> checkLogin(String email, String rawPassword) {
+    public Boolean checkLogin(String email, String rawPassword) {
         List<Account> listaccount = accountReposiroty.findByEmail(email);
         if (!listaccount.isEmpty()) {
             Account account = listaccount.get(0);
             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             if (passwordEncoder.matches(rawPassword, account.getPassword())) {
-                return CompletableFuture.completedFuture(true);
+                return true;
             }
         }
-        return CompletableFuture.completedFuture(false);
+        return false;
     }
 
     @Override
