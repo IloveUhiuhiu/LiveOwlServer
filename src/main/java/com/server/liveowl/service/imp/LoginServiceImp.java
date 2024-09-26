@@ -14,5 +14,5 @@ public interface LoginServiceImp {
     //    List<UserDTO> getAllUser();
     Boolean checkLogin(String email, String password);
     Boolean  addUser(SingupRequest singupRequest);
-
+    int getUserRole(String email);
 }

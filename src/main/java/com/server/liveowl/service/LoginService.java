@@ -78,4 +78,10 @@ public class LoginService implements LoginServiceImp {
         }
         return false;
     }
+
+    @Override
+    public int getUserRole(String email) {
+        int role = accountReposiroty.findByEmail(email).get(0).getRole();
+        return role;
+    }
 }

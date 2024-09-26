@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -16,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class CustomJwtFilter extends OncePerRequestFilter {
@@ -36,11 +39,21 @@ public class CustomJwtFilter extends OncePerRequestFilter {
         String token = getTokenFromHeader(request);
 
         if (token != null && jwtUstilHelper.verifyToken(token)) {
-            // Trích xuất email từ token
+            // Trích xuất email va role từ token
             String email = jwtUstilHelper.getEmailFromToken(token);
+            System.out.println("email filter " + email);
+            int role = jwtUstilHelper.getRoleFromToken(token);
+            System.out.println("role filter" + role);
+            // Xác định danh sách quyền hạn (authorities) dựa trên role
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            if (role == 1) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_GIAO_VIEN"));
+            } else if (role == 2) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_HOC_SINH"));
+            }
             // Tạo đối tượng UsernamePasswordAuthenticationToken với email và quyền hạn (roles)
             UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(email, null, new ArrayList<>());
+                    new UsernamePasswordAuthenticationToken(email, null, authorities);
 
             // Thiết lập đối tượng vào SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
