@@ -53,7 +53,7 @@ public class LoginController {
     @PostMapping("/singup")
     public ResponseEntity<?> singup(@RequestBody SingupRequest singupRequest) {
         Responsetdata responsetdata = new Responsetdata();
-        responsetdata.setData(loginServiceImp.addUser(singupRequest));
+        responsetdata.setIssucess(loginServiceImp.addUser(singupRequest));
         return new ResponseEntity<>(responsetdata, HttpStatus.OK);
     }
 
