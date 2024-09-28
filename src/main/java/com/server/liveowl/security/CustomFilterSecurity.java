@@ -32,7 +32,7 @@ public class CustomFilterSecurity {
                 .sessionManagement(sessionManagement ->sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("login/**").permitAll() // Cho phép truy cập không cần xác thực
+                        .requestMatchers("users/**").permitAll() // Cho phép truy cập không cần xác thực
                         .anyRequest().authenticated()  // Mọi request khác phải xác thực
                 );
      http.addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
