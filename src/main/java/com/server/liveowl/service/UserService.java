@@ -1,30 +1,24 @@
 package com.server.liveowl.service;
 
-import com.server.liveowl.dto.UserDTO;
+import com.server.liveowl.dto.AccountDetailDTO;
 import com.server.liveowl.entity.Account;
 import com.server.liveowl.entity.AccountInfor;
-import com.server.liveowl.entity.Roles;
-import com.server.liveowl.entity.Users;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.repository.AccountInforRepository;
-import com.server.liveowl.repository.AccountInforRepository;
-import com.server.liveowl.repository.AccountReposiroty;
-import com.server.liveowl.repository.AccountReposiroty;
-import com.server.liveowl.service.imp.LoginServiceImp;
+import com.server.liveowl.repository.UserReposiroty;
+import com.server.liveowl.service.imp.UserServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Service
-public class LoginService implements LoginServiceImp {
+public class UserService implements UserServiceImp {
     @Autowired
-    AccountReposiroty accountReposiroty;
+    UserReposiroty accountReposiroty;
 
     @Autowired
     AccountInforRepository accountInforRepository;
@@ -79,9 +73,32 @@ public class LoginService implements LoginServiceImp {
         return false;
     }
 
+
+
     @Override
     public int getUserRole(String email) {
         int role = accountReposiroty.findByEmail(email).get(0).getRole();
         return role;
+    }
+
+    @Override
+    public AccountDetailDTO getAccountDetail(String email) {
+        List<Account> account = accountReposiroty.findByEmail(email);
+        if (account != null && !account.isEmpty()) {
+            AccountInfor accountInfor = accountInforRepository.findByAccountId(account.get(0).getAccountId());
+            return new AccountDetailDTO(
+                    account.get(0).getAccountId(),
+                    account.get(0).getEmail(),
+                    account.get(0).getRole(),
+                    accountInfor.getFullName(),
+                    accountInfor.getDateOfBirth() != null ? new java.sql.Date(accountInfor.getDateOfBirth().getTime()) : null,  // Handle date conversion
+                    accountInfor.getGender(),
+                    accountInfor.getProfile(),
+                    accountInfor.getCreateAt() != null ? new java.sql.Date(accountInfor.getCreateAt().getTime()) : null,  // Handle date conversion
+                    accountInfor.getUpdateAt() != null ? new java.sql.Date(accountInfor.getUpdateAt().getTime()) : null   // Handle date conversion
+            );
+        } else {
+            return null;
+        }
     }
 }

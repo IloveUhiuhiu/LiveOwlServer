@@ -7,8 +7,8 @@ public class SingupRequest {
     private String email;
     private String password;
     private int role;
-    private String fullname;
-    private Date dateofbirth;
+    private String fullName;
+    private Date dateOfBirth;
     private Boolean gender;
 
 
@@ -37,11 +37,11 @@ public class SingupRequest {
     }
 
     public String getFullname() {
-        return fullname;
+        return fullName;
     }
 
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
+    public void setFullname(String fullName) {
+        this.fullName = fullName;
     }
 
     public Boolean getGender() {
@@ -53,10 +53,10 @@ public class SingupRequest {
     }
 
     public Date getDateofbirth() {
-        return dateofbirth;
+        return dateOfBirth;
     }
 
-    public void setDateofbirth(Date dateofbirth) {
-        this.dateofbirth = dateofbirth;
+    public void setDateofbirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 }

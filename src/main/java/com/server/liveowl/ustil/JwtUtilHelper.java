@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class JwtUstilHelper {
+public class JwtUtilHelper {
 
     @Value("${jwt.privatekey}")
     private String privateKey;

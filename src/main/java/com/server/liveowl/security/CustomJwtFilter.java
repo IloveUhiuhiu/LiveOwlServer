@@ -1,7 +1,7 @@
 package com.server.liveowl.security;
 
 import ch.qos.logback.core.util.StringUtil;
-import com.server.liveowl.ustil.JwtUstilHelper;
+import com.server.liveowl.ustil.JwtUtilHelper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,14 +23,14 @@ import java.util.List;
 @Component
 public class CustomJwtFilter extends OncePerRequestFilter {
     @Autowired
-    JwtUstilHelper jwtUstilHelper;
+    JwtUtilHelper jwtUtilHelper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
         // Bỏ qua xác thực JWT cho các endpoint login
-        if (requestURI.startsWith("/login")) {
+        if (requestURI.startsWith("/users")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -38,11 +38,11 @@ public class CustomJwtFilter extends OncePerRequestFilter {
         // Thực hiện xác thực JWT cho các endpoint khác
         String token = getTokenFromHeader(request);
 
-        if (token != null && jwtUstilHelper.verifyToken(token)) {
+        if (token != null && jwtUtilHelper.verifyToken(token)) {
             // Trích xuất email va role từ token
-            String email = jwtUstilHelper.getEmailFromToken(token);
+            String email = jwtUtilHelper.getEmailFromToken(token);
             System.out.println("email filter " + email);
-            int role = jwtUstilHelper.getRoleFromToken(token);
+            int role = jwtUtilHelper.getRoleFromToken(token);
             System.out.println("role filter" + role);
             // Xác định danh sách quyền hạn (authorities) dựa trên role
             List<GrantedAuthority> authorities = new ArrayList<>();
@@ -61,7 +61,6 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
     private String getTokenFromHeader(HttpServletRequest request )
     {
         String header = request.getHeader("Authorization");
@@ -69,7 +68,6 @@ public class CustomJwtFilter extends OncePerRequestFilter {
         if(header != null || header.startsWith("Bearer "))
         {
             token = header.substring(7);
-
         }
         return token;
     }

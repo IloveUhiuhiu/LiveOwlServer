@@ -1,25 +1,15 @@
 package com.server.liveowl.payload;
 
 public class Responsetdata {
-    private int status = 200;
-    private  Boolean issucess = true;
-    private String desc;
+    private String message;
     private  Object data;
 
-    public int getStatus() {
-        return status;
+    public String getMessage() {
+        return message;
     }
 
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Object getData() {
@@ -28,13 +18,5 @@ public class Responsetdata {
 
     public void setData(Object data) {
         this.data = data;
-    }
-
-    public Boolean getIssucess() {
-        return issucess;
-    }
-
-    public void setIssucess(Boolean issucess) {
-        this.issucess = issucess;
     }
 }
