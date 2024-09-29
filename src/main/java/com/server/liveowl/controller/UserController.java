@@ -1,10 +1,10 @@
 package com.server.liveowl.controller;
 
 import com.server.liveowl.dto.AccountDetailDTO;
-import com.server.liveowl.payload.Responsetdata;
+import com.server.liveowl.payload.response.Responsetdata;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.service.imp.UserServiceImp;
-import com.server.liveowl.ustil.JwtUtilHelper;
+import com.server.liveowl.util.JwtUtilHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +32,7 @@ public class UserController {
 //        SecretKey key = Jwts.SIG.HS256.key().build(); //or HS384.key() or HS512.key()
 //        String secretString = Encoders.BASE64.encode(key.getEncoded());
 //        System.out.println(secretString);
+       System.out.println(email + ", " + password);
         if(userServiceImp.checkLogin(email, password))
         {
             int role = userServiceImp.getUserRole(email);
