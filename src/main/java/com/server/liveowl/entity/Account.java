@@ -9,7 +9,7 @@ import java.util.UUID;
 public class Account {
 
     @Id
-    @GeneratedValue
+    @Column(name = "account_id")
     private UUID accountId;
 
     @Column(name ="email" )
@@ -25,6 +25,15 @@ public class Account {
     @PrimaryKeyJoinColumn
     private AccountInfor accountInfor;
 
+    public Account() {
+
+    }
+    public Account(UUID accountId,String email, String password, int role) {
+        this.accountId = accountId;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
     public UUID getAccountId() {
         return accountId;
     }

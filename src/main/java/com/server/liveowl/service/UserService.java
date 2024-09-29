@@ -50,23 +50,15 @@ public class UserService implements UserServiceImp {
         if (listaccount.size() == 0) {
                 BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
                 String hashedPassword = passwordEncoder.encode(password);
-                UUID accountid = UUID.randomUUID();
+                UUID accountId = UUID.randomUUID();
 
-                Account account = new Account();
-                account.setAccountId(accountid);
-                account.setEmail(email);
-                account.setPassword(hashedPassword);
-                account.setRole(role);
+                Account account = new Account(accountId,email,hashedPassword,role);
 
-                AccountInfor accountInfor = new AccountInfor();
-                accountInfor.setAccountId(accountid);
-                accountInfor.setFullName(fullname);
-                accountInfor.setDateOfBirth(dateofbirth);
-                accountInfor.setGender(gender);
+
+                AccountInfor accountInfor = new AccountInfor(accountId,fullname,dateofbirth,gender);
+
                 accountInfor.setAccount(account);  // Liên kết AccountInfor với Account
-
                 account.setAccountInfor(accountInfor);  // Liên kết Account với AccountInfor
-
                 accountReposiroty.save(account);  // Lưu account vào cơ sở dữ liệu
                 return true;
         }
@@ -91,12 +83,11 @@ public class UserService implements UserServiceImp {
                     account.get(0).getEmail(),
                     account.get(0).getRole(),
                     accountInfor.getFullName(),
-                    accountInfor.getDateOfBirth() != null ? new java.sql.Date(accountInfor.getDateOfBirth().getTime()) : null,  // Handle date conversion
+                    accountInfor.getDateOfBirth(),  // Handle date conversion
                     accountInfor.getGender(),
                     accountInfor.getProfile(),
-                    accountInfor.getCreateAt() != null ? new java.sql.Date(accountInfor.getCreateAt().getTime()) : null,  // Handle date conversion
-                    accountInfor.getUpdateAt() != null ? new java.sql.Date(accountInfor.getUpdateAt().getTime()) : null   // Handle date conversion
-            );
+                    accountInfor.getCreateAt(),  // Handle date conversion
+                    accountInfor.getUpdateAt());
         } else {
             return null;
         }

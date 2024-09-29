@@ -1,4 +1,4 @@
-package com.server.liveowl.ustil;
+package com.server.liveowl.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
