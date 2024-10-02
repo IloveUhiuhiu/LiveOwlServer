@@ -9,7 +9,7 @@ import java.util.UUID;
 public class Logger {
     @Id
     @Column(name ="logger_id")
-    private UUID loggerId;
+    private String loggerId;
 
     @Column(name ="content_of_logger")
     private String contentOfLogger;
@@ -21,10 +21,10 @@ public class Logger {
     @JoinColumn(name = "result_id", referencedColumnName = "result_id", insertable = false, updatable = false)
     private Result result;
 
-    public UUID getLoggerId() {
+    public String getLoggerId() {
         return loggerId;
     }
-    public void setLoggerId(UUID loggerId) {
+    public void setLoggerId(String loggerId) {
         this.loggerId = loggerId;
     }
     public String getContentOfLogger() {

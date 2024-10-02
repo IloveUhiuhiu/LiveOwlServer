@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -73,4 +74,15 @@ public class JwtUtilHelper {
 
         return claims.get("role", Integer.class);  // Trả về role dưới dạng int
     }
+    public String getTokenFromHeader(HttpServletRequest request )
+    {
+        String header = request.getHeader("Authorization");
+        String token = null;
+        if(header != null || header.startsWith("Bearer "))
+        {
+            token = header.substring(7);
+        }
+        return token;
+    }
+
 }

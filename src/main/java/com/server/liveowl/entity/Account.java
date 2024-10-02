@@ -10,7 +10,7 @@ public class Account {
 
     @Id
     @Column(name = "account_id")
-    private UUID accountId;
+    private String accountId;
 
     @Column(name ="email" )
     private String email;
@@ -28,17 +28,17 @@ public class Account {
     public Account() {
 
     }
-    public Account(UUID accountId,String email, String password, int role) {
+    public Account(String accountId,String email, String password, int role) {
         this.accountId = accountId;
         this.email = email;
         this.password = password;
         this.role = role;
     }
-    public UUID getAccountId() {
+    public String getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(UUID accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 

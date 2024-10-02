@@ -9,7 +9,7 @@ import java.util.UUID;
 public class Result {
     @Id
     @Column(name = "result_id")
-    private UUID resultId;
+    private String resultId;
 
     @Column(name = "link_video")
     private String linkVideo;
@@ -25,10 +25,10 @@ public class Result {
     @JoinColumn(name = "exam_id", referencedColumnName = "exam_id", insertable = false, updatable = false)
     private Exam exam;
 
-    public UUID getResultId() {
+    public String getResultId() {
         return resultId;
     }
-    public void setResultId(UUID resultId) {
+    public void setResultId(String resultId) {
         this.resultId = resultId;
     }
     public String getLinkVideo() {
