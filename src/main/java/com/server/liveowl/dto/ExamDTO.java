@@ -1,47 +1,35 @@
-package com.server.liveowl.entity;
+package com.server.liveowl.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
-@Entity
-public class Exam {
-    @Id
-    @Column(name = "exam_id")
+public class ExamDTO {
     private String examId;
-
-    @Column(name ="name_of_exam" )
     private String nameOfExam;
 
-    @Column(name ="subject_of_exam" )
     private String subjectOfExam;
 
-    @Column(name ="start_time_of_exam" )
     private LocalDateTime startTimeOfExam;
 
-    @Column(name ="duration_of_exam" )
     private int durationOfExam;
 
-    @Column(name ="code_of_exam" )
     private String codeOfExam;
 
-    @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "account_id", referencedColumnName = "account_id", insertable = true, updatable = true)
-    private Account account;
-    public Exam () {
-    }
-    public Exam(String nameOfExam,String subjectOfExam, LocalDateTime startTimeOfExam, int durationOfExam, Account account) {
+    public ExamDTO(String examId, String nameOfExam, String subjectOfExam, LocalDateTime startTimeOfExam,int durationOfExam, String codeOfExam) {
+        this.examId = examId;
         this.nameOfExam = nameOfExam;
         this.subjectOfExam = subjectOfExam;
         this.startTimeOfExam = startTimeOfExam;
         this.durationOfExam = durationOfExam;
-        this.account = account;
+        this.codeOfExam = codeOfExam;
+
+    }
+    public String getExamId() {
+        return examId;
     }
     public void setExamId(String examId) {
         this.examId = examId;
     }
+
     public void setNameOfExam(String nameOfExam) {
         this.nameOfExam = nameOfExam;
     }
@@ -53,12 +41,6 @@ public class Exam {
     }
     public void setDurationOfExam(int durationOfExam) {
         this.durationOfExam = durationOfExam;
-    }
-    public void setCodeOfExam(String codeOfExam) {
-        this.codeOfExam = codeOfExam;
-    }
-    public String getExamId() {
-        return examId;
     }
     public String getNameOfExam() {
         return nameOfExam;
@@ -75,12 +57,8 @@ public class Exam {
     public String getCodeOfExam() {
         return codeOfExam;
     }
-
-    public Account getAccount() {
-        return account;
-    }
-    public void setAccount(Account account) {
-        this.account = account;
+    public void setCodeOfExam(String codeOfExam) {
+        this.codeOfExam = codeOfExam;
     }
 
 }

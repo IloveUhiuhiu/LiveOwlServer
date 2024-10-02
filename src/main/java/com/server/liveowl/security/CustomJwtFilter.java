@@ -33,7 +33,7 @@ public class CustomJwtFilter extends OncePerRequestFilter {
         }
 
         // Thực hiện xác thực JWT cho các endpoint khác
-        String token = getTokenFromHeader(request);
+        String token = jwtUtilHelper.getTokenFromHeader(request);
 
         if (token != null && jwtUtilHelper.verifyToken(token)) {
             // Trích xuất email va role từ token
@@ -58,14 +58,5 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-    private String getTokenFromHeader(HttpServletRequest request )
-    {
-        String header = request.getHeader("Authorization");
-        String token = null;
-        if(header != null || header.startsWith("Bearer "))
-        {
-            token = header.substring(7);
-        }
-        return token;
-    }
+
 }

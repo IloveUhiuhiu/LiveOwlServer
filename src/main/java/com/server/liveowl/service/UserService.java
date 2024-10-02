@@ -50,7 +50,7 @@ public class UserService implements UserServiceImp {
         if (listaccount.size() == 0) {
                 BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
                 String hashedPassword = passwordEncoder.encode(password);
-                UUID accountId = UUID.randomUUID();
+                String accountId = UUID.randomUUID().toString().substring(0,8);
 
                 Account account = new Account(accountId,email,hashedPassword,role);
 
@@ -66,7 +66,13 @@ public class UserService implements UserServiceImp {
     }
 
 
-
+    public Account getAccountByEmail(String email) {
+        List<Account> listaccount = accountReposiroty.findByEmail(email);
+        if (listaccount.isEmpty()) {
+            return null;
+        }
+        return listaccount.get(0);
+    }
     @Override
     public int getUserRole(String email) {
         int role = accountReposiroty.findByEmail(email).get(0).getRole();

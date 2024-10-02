@@ -1,11 +1,15 @@
 package com.server.liveowl.payload.response;
 
-import com.google.gson.JsonObject;
-
-public class Responsetdata {
+public class Responsedata {
     private String message;
     private Object data;
+    public Responsedata() {
 
+    }
+    public Responsedata(String message, Object data) {
+        this.message = message;
+        this.data = data;
+    }
     public String getMessage() {
         return message;
     }

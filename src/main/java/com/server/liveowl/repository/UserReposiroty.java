@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface UserReposiroty extends JpaRepository<Account, UUID> {
+public interface UserReposiroty extends JpaRepository<Account, String> {
 //    List<Users> findByUserNameAndPassWord(String username, String password);
 //
 //    List<Users> findByUserNameAndEmail(String username, String email);
@@ -17,5 +17,5 @@ public interface UserReposiroty extends JpaRepository<Account, UUID> {
 //    List<Users> findByUserNameOrEmail(String username, String email);
 
     List<Account> findByEmail(String email);
-    AccountInfor findByAccountId(UUID accountId);
+    AccountInfor findByAccountId(String accountId);
 }

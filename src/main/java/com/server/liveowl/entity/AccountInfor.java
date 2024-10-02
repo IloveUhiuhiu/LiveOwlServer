@@ -12,7 +12,7 @@ public class AccountInfor {
 
     @Id
     @Column(name = "account_infor_id")
-    private UUID accountId;
+    private String accountId;
 
     @Column(name = "full_name")
     private String fullName;
@@ -42,7 +42,7 @@ public class AccountInfor {
     public AccountInfor() {
 
     }
-    public AccountInfor(UUID accountId, String fullName, Date dateOfBirth, Boolean gender) {
+    public AccountInfor(String accountId, String fullName, Date dateOfBirth, Boolean gender) {
         this.accountId = accountId;
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
@@ -51,11 +51,11 @@ public class AccountInfor {
         this.createAt = LocalDateTime.now();
         this.updateAt = LocalDateTime.now();
     }
-    public UUID getAccountId() {
+    public String getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(UUID accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 

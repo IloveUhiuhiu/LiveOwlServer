@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class AccountDetailDTO {
 
-    private UUID accountId;
+    private String accountId;
     private String email;
     private int role;
     private String fullName;
@@ -19,7 +19,7 @@ public class AccountDetailDTO {
 
     // Constructor, getters, setters
 
-    public AccountDetailDTO(UUID accountId, String email, int role, String fullName, Date dateOfBirth,
+    public AccountDetailDTO(String accountId, String email, int role, String fullName, Date dateOfBirth,
                             Boolean gender, Blob profile, LocalDateTime createAt, LocalDateTime updateAt) {
         this.accountId = accountId;
         this.email = email;
@@ -32,11 +32,11 @@ public class AccountDetailDTO {
         this.updateAt = updateAt;
     }
 
-    public UUID getAccountId() {
+    public String getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(UUID accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 
