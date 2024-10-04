@@ -54,6 +54,11 @@ public class CustomJwtFilter extends OncePerRequestFilter {
 
             // Thiết lập đối tượng vào SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            System.out.println("Valid token");
+        } else {
+
+                System.err.println("Invalid token");
+
         }
 
         filterChain.doFilter(request, response);

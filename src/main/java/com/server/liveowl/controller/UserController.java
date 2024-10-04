@@ -1,6 +1,7 @@
 package com.server.liveowl.controller;
 
 import com.server.liveowl.dto.AccountDetailDTO;
+import com.server.liveowl.dto.TokenDTO;
 import com.server.liveowl.payload.response.Responsedata;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.service.imp.UserServiceImp;
@@ -37,7 +38,7 @@ public class UserController {
         {
             int role = userServiceImp.getUserRole(email);
             String token = jwtUtilHelper.generateToken(email, role);
-            responsetdata.setData(token);
+            responsetdata.setData(new TokenDTO(role,token));
             responsetdata.setMessage("Đăng nhập thành công");
             return new ResponseEntity<>(responsetdata, HttpStatus.OK);
         }
