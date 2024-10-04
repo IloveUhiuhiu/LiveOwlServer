@@ -12,6 +12,7 @@ import com.server.liveowl.util.JwtUtilHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public class ExamController {
         account = userServiceImp.getAccountByEmail(email);
 
     }
-
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/all")
     public ResponseEntity<Responsedata> getAllExams () {
         System.out.println(account.getEmail());
