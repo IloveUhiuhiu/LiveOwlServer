@@ -1,25 +1,26 @@
 package com.server.liveowl.dto;
 
 import java.sql.Blob;
-import java.sql.Date;
+import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class AccountDetailDTO {
 
-    private UUID accountId;
+    private String accountId;
     private String email;
     private int role;
     private String fullName;
     private Date dateOfBirth;
     private Boolean gender;
     private Blob profile;
-    private Date createAt;
-    private Date updateAt;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
 
     // Constructor, getters, setters
 
-    public AccountDetailDTO(UUID accountId, String email, int role, String fullName, Date dateOfBirth,
-                            Boolean gender, Blob profile, Date createAt, Date updateAt) {
+    public AccountDetailDTO(String accountId, String email, int role, String fullName, Date dateOfBirth,
+                            Boolean gender, Blob profile, LocalDateTime createAt, LocalDateTime updateAt) {
         this.accountId = accountId;
         this.email = email;
         this.role = role;
@@ -31,11 +32,11 @@ public class AccountDetailDTO {
         this.updateAt = updateAt;
     }
 
-    public UUID getAccountId() {
+    public String getAccountId() {
         return accountId;
     }
 
-    public void setAccountId(UUID accountId) {
+    public void setAccountId(String accountId) {
         this.accountId = accountId;
     }
 
@@ -87,19 +88,19 @@ public class AccountDetailDTO {
         this.profile = profile;
     }
 
-    public java.util.Date getCreateAt() {
+    public LocalDateTime getCreateAt() {
         return createAt;
     }
 
-    public void setCreateAt(Date createAt) {
+    public void setCreateAt(LocalDateTime createAt) {
         this.createAt = createAt;
     }
 
-    public java.util.Date getUpdateAt() {
+    public LocalDateTime getUpdateAt() {
         return updateAt;
     }
 
-    public void setUpdateAt(Date updateAt) {
+    public void setUpdateAt(LocalDateTime updateAt) {
         this.updateAt = updateAt;
     }
 }

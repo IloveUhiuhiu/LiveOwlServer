@@ -1,10 +1,11 @@
 package com.server.liveowl.controller;
 
 import com.server.liveowl.dto.AccountDetailDTO;
-import com.server.liveowl.payload.Responsetdata;
+import com.server.liveowl.dto.TokenDTO;
+import com.server.liveowl.payload.response.Responsedata;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.service.imp.UserServiceImp;
-import com.server.liveowl.ustil.JwtUtilHelper;
+import com.server.liveowl.util.JwtUtilHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +27,18 @@ public class UserController {
     @PostMapping("/signin")
     public ResponseEntity<?> signin(@RequestParam String email, @RequestParam String password) {
 
-        Responsetdata responsetdata = new Responsetdata();
+        Responsedata responsetdata = new Responsedata();
 
         // tạo key cho api
 //        SecretKey key = Jwts.SIG.HS256.key().build(); //or HS384.key() or HS512.key()
 //        String secretString = Encoders.BASE64.encode(key.getEncoded());
 //        System.out.println(secretString);
+       System.out.println(email + ", " + password);
         if(userServiceImp.checkLogin(email, password))
         {
             int role = userServiceImp.getUserRole(email);
             String token = jwtUtilHelper.generateToken(email, role);
-            responsetdata.setData(token);
+            responsetdata.setData(new TokenDTO(role,token));
             responsetdata.setMessage("Đăng nhập thành công");
             return new ResponseEntity<>(responsetdata, HttpStatus.OK);
         }
@@ -51,7 +53,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SingupRequest singupRequest) {
-        Responsetdata responsetdata = new Responsetdata();
+        Responsedata responsetdata = new Responsedata();
         if(userServiceImp.addUser(singupRequest)) {
             responsetdata.setMessage("Đăng kí thành công");
             return new ResponseEntity<>(responsetdata, HttpStatus.OK);
@@ -63,7 +65,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @PostMapping("/detail")
     public ResponseEntity<?> getDetailUser() {
-        Responsetdata responsetdata = new Responsetdata();
+        Responsedata responsetdata = new Responsedata();
 
         try {
             // Lấy email từ SecurityContext (đã được xác thực bởi JWT)
