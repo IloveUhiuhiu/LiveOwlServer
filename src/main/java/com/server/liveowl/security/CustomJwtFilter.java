@@ -30,7 +30,7 @@ public class CustomJwtFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
 
         // Bỏ qua xác thực JWT cho các endpoint login
-        if (requestURI.startsWith("/users")) {
+        if (requestURI.startsWith("/users/signin") || requestURI.startsWith("/users/signup")) {
             filterChain.doFilter(request, response);
             return;
         }
