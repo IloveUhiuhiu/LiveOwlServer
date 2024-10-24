@@ -101,7 +101,7 @@ public class SocketServer implements Runnable {
         return new String(datagramPacket.getData(),0,datagramPacket.getLength());
     }
 }
-
+//long
 class StudentHandler implements Runnable {
     private final DatagramSocket theSocket;
     public DatagramPacket thePacket;
@@ -194,6 +194,130 @@ class StudentHandler implements Runnable {
 
 }
 
+//Hung
+//class StudentHandler implements Runnable {
+//    private final DatagramSocket theSocket;
+//    public DatagramPacket thePacket;
+//    private final String code;
+//
+//    public StudentHandler(DatagramSocket theSocket, DatagramPacket thePacket, String code) throws IOException {
+//        this.theSocket = theSocket;
+//        this.thePacket = thePacket;
+//        this.code = code;
+//    }
+//
+//    public void sendRequest(String message) throws IOException {
+//        byte[] messageBytes = message.getBytes();
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, thePacket.getAddress(), thePacket.getPort());
+//        theSocket.send(packet);
+//    }
+//
+//    public String receiveResponse() throws IOException {
+//        byte[] messageBytes = new byte[1024];
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length);
+//        theSocket.receive(packet);
+//        return new String(packet.getData(), 0, packet.getLength());
+//    }
+//
+//    public byte[] receiveBytes() throws IOException {
+//        byte[] messageBytes = new byte[1024];
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length);
+//        theSocket.receive(packet);
+//        return messageBytes;
+//    }
+//
+//    @Override
+//    public void run() {
+//        try {
+//            while (true) {
+//                System.out.println("Bắt đầu nhận ảnh và ký tự từ student");
+//
+//                // Nhận ký tự từ student
+//                String keyboardInput = receiveKeyboardInput();
+//                System.out.println("Student gửi ký tự: " + keyboardInput);
+//
+//                // Gửi ký tự cho teacher
+//                sendKeyboardInputToTeacher(keyboardInput);
+//
+//                // Logic nhận và gửi ảnh
+//                receiveAndSendImage();
+//            }
+//
+//        } catch (Exception e) {
+//            System.err.println(e.getMessage());
+//        } finally {
+//            try {
+//                theSocket.close();
+//            } catch (Exception e) {
+//                // Handle exception if needed
+//            }
+//        }
+//    }
+//
+//    private void receiveAndSendImage() throws IOException {
+//        boolean flag;
+//        int sequenceNumber = 0;
+//        int foundLast = 0;
+//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//        while (true) {
+//            byte[] message = new byte[1024];
+//            DatagramPacket receivedPacket = new DatagramPacket(message, message.length);
+//            theSocket.receive(receivedPacket);
+//
+//            sequenceNumber = ((message[0] & 0xff) << 8) + (message[1] & 0xff);
+//            boolean isLastPacket = ((message[2] & 0xff) == 1) && foundLast > 10;
+//
+//            if (sequenceNumber == foundLast + 1) {
+//                foundLast = sequenceNumber;
+//                baos.write(message, 3, receivedPacket.getLength() - 3);
+//                sendAck(foundLast);
+//                System.out.println("Received: Sequence number: " + foundLast);
+//            } else {
+//                System.out.println("Expected sequence number: " + (foundLast + 1) + " but received " + sequenceNumber + ". DISCARDING");
+//                sendAck(foundLast);
+//            }
+//
+//            if (isLastPacket) {
+//                break;
+//            }
+//        }
+//        System.out.println("Nhận thành công 1 ảnh!");
+//        byte[] imageBytes = baos.toByteArray();
+//        sendImageForTeacher(imageBytes);
+//    }
+//
+//    private String receiveKeyboardInput() throws IOException {
+//        byte[] messageBytes = new byte[1024];
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length);
+//        theSocket.receive(packet);
+//        return new String(packet.getData(), 0, packet.getLength());
+//    }
+//
+//    private synchronized void sendKeyboardInputToTeacher(String input) throws IOException {
+//        TeacherHandler theTeacher = SocketServer.teachers.get(code);
+//        if (theTeacher != null) {
+//            theTeacher.sendRequest(input);
+//        }
+//    }
+//
+//    private void sendAck(int foundLast) throws IOException {
+//        byte[] ackPacket = new byte[2];
+//        ackPacket[0] = (byte) (foundLast >> 8);
+//        ackPacket[1] = (byte) (foundLast);
+//        DatagramPacket acknowledgement = new DatagramPacket(ackPacket, ackPacket.length, thePacket.getAddress(), thePacket.getPort());
+//        theSocket.send(acknowledgement);
+//        System.out.println("Sent ack: Sequence Number = " + foundLast);
+//    }
+//
+//    private synchronized void sendImageForTeacher(byte[] imageBytes) throws IOException {
+//        TeacherHandler theTeacher = SocketServer.teachers.get(code);
+//        if (theTeacher != null) {
+//            theTeacher.sendPacketImage(imageBytes);
+//        }
+//    }
+//}
+
+//Long
 class TeacherHandler implements Runnable {
     private final DatagramSocket theSocket;
     public DatagramPacket thePacket;
@@ -312,3 +436,112 @@ class TeacherHandler implements Runnable {
 
 }
 
+//Hung
+//class TeacherHandler implements Runnable {
+//    private final DatagramSocket theSocket;
+//    public DatagramPacket thePacket;
+//    private final String code;
+//
+//    public TeacherHandler(DatagramSocket theSocket, DatagramPacket thePacket, String code) throws IOException {
+//        this.theSocket = theSocket;
+//        this.thePacket = thePacket;
+//        this.code = code;
+//    }
+//
+//    public void sendRequest(String message) throws IOException {
+//        byte[] messageBytes = message.getBytes();
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length, thePacket.getAddress(), thePacket.getPort());
+//        theSocket.send(packet);
+//    }
+//
+//    public String receiveResponse() throws IOException {
+//        byte[] messageBytes = new byte[1024];
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length);
+//        theSocket.receive(packet);
+//        return new String(packet.getData(), 0, packet.getLength());
+//    }
+//
+//    public DatagramPacket receivePacket() throws IOException {
+//        byte[] messageBytes = new byte[1024];
+//        DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length);
+//        theSocket.receive(packet);
+//        return packet;
+//    }
+//
+//    public void run() {
+//        try {
+//            while (true) {
+//                String request = receiveResponse();
+//                System.out.println("Received: " + request);
+//
+//                // Xử lý nếu request là ký tự bàn phím
+//                if (request.length() == 1) {
+//                    System.out.println("Teacher nhận được ký tự từ student: " + request);
+//                } else {
+//                    sendRequest(request);
+//                }
+//            }
+//        } catch (Exception e) {
+//            System.err.println("Error: " + e.getMessage());
+//        }
+//    }
+//
+//    public void sendPacketImage(byte[] imageByteArray) throws IOException {
+//        System.out.println("Bắt đầu gửi ảnh");
+//        int sequenceNumber = 0;
+//        boolean flag;
+//        int ackSequence = 0;
+//
+//        for (int i = 0; i < imageByteArray.length; i += 1021) {
+//            sequenceNumber += 1;
+//            byte[] message = new byte[1024];
+//            message[0] = (byte) (sequenceNumber >> 8);
+//            message[1] = (byte) (sequenceNumber);
+//
+//            if ((i + 1021) >= imageByteArray.length) {
+//                flag = true;
+//                message[2] = (byte) (1);
+//            } else {
+//                flag = false;
+//                message[2] = (byte) (0);
+//            }
+//
+//            if (!flag) {
+//                System.arraycopy(imageByteArray, i, message, 3, 1021);
+//            } else {
+//                System.arraycopy(imageByteArray, i, message, 3, imageByteArray.length - i);
+//            }
+//
+//            InetAddress address = thePacket.getAddress();
+//            int port = thePacket.getPort();
+//
+//            DatagramPacket sendPacket = new DatagramPacket(message, message.length, address, port);
+//            theSocket.send(sendPacket);
+//            System.out.println("Gửi thành công packet thứ: " + sequenceNumber);
+//
+//            boolean ackRec;
+//
+//            while (true) {
+//                byte[] ack = new byte[2];
+//                DatagramPacket ackpack = new DatagramPacket(ack, ack.length);
+//
+//                try {
+//                    theSocket.setSoTimeout(500);
+//                    theSocket.receive(ackpack);
+//                    ackSequence = ((ack[0] & 0xff) << 8) + (ack[1] & 0xff);
+//                    ackRec = true;
+//                } catch (SocketTimeoutException e) {
+//                    ackRec = false;
+//                }
+//
+//                if ((ackSequence == sequenceNumber) && ackRec) {
+//                    System.out.println("Ack received: Sequence Number = " + ackSequence);
+//                    break;
+//                } else {
+//                    theSocket.send(sendPacket);
+//                    System.out.println("Resending: Sequence Number = " + sequenceNumber);
+//                }
+//            }
+//        }
+//    }
+//}

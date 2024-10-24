@@ -36,32 +36,34 @@ public class CustomJwtFilter extends OncePerRequestFilter {
         String token = jwtUtilHelper.getTokenFromHeader(request);
 
         if (token != null && jwtUtilHelper.verifyToken(token)) {
-            // Trích xuất email va role từ token
-            String email = jwtUtilHelper.getEmailFromToken(token);
-            System.out.println("email filter " + email);
-            int role = jwtUtilHelper.getRoleFromToken(token);
-            System.out.println("role filter" + role);
-            // Xác định danh sách quyền hạn (authorities) dựa trên role
-            List<GrantedAuthority> authorities = new ArrayList<>();
-            if (role == 1) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_GIAO_VIEN"));
-            } else if (role == 2) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_HOC_SINH"));
-            }
-            // Tạo đối tượng UsernamePasswordAuthenticationToken với email và quyền hạn (roles)
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(email, null, authorities);
+            if (token != null && jwtUtilHelper.verifyToken(token)) {
+                // Trích xuất email va role từ token
+                String email = jwtUtilHelper.getEmailFromToken(token);
+                System.out.println("email filter " + email);
+                int role = jwtUtilHelper.getRoleFromToken(token);
+                System.out.println("role filter" + role);
+                // Xác định danh sách quyền hạn (authorities) dựa trên role
+                List<GrantedAuthority> authorities = new ArrayList<>();
+                if (role == 1) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_GIAO_VIEN"));
+                } else if (role == 2) {
+                    authorities.add(new SimpleGrantedAuthority("ROLE_HOC_SINH"));
+                }
+                // Tạo đối tượng UsernamePasswordAuthenticationToken với email và quyền hạn (roles)
+                UsernamePasswordAuthenticationToken authenticationToken =
+                        new UsernamePasswordAuthenticationToken(email, null, authorities);
 
-            // Thiết lập đối tượng vào SecurityContext
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            System.out.println("Valid token");
-        } else {
+                // Thiết lập đối tượng vào SecurityContext
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                System.out.println("Valid token");
+            } else {
 
                 System.err.println("Invalid token");
 
+            }
+
+            filterChain.doFilter(request, response);
         }
 
-        filterChain.doFilter(request, response);
     }
-
 }
