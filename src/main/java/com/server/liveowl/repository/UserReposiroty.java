@@ -19,3 +19,5 @@ public interface UserReposiroty extends JpaRepository<Account, String> {
     List<Account> findByEmail(String email);
     AccountInfor findByAccountId(String accountId);
 }
+
+
