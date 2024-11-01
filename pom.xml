@@ -147,7 +147,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
-    </dependencies>
+		<dependency>
+			<groupId>org.apache.ftpserver</groupId>
+			<artifactId>ftpserver-core</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+
+
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -62,7 +62,7 @@ public class UserController {
         return new ResponseEntity<>(responsetdata, HttpStatus.NOT_FOUND);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
+ //   @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @PostMapping("/detail")
     public ResponseEntity<?> getDetailUser() {
         Responsedata responsetdata = new Responsedata();
