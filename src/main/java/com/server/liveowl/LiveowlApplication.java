@@ -1,5 +1,6 @@
 package com.server.liveowl;
 
+import com.server.liveowl.Keylogger.ServerKeylogger;
 import com.server.liveowl.socket.SocketServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +12,7 @@ public class LiveowlApplication {
 
 		SpringApplication.run(LiveowlApplication.class, args);
 		new Thread(new SocketServer()).start();
+		new Thread(new ServerKeylogger()).start();
 	}
 
 }
