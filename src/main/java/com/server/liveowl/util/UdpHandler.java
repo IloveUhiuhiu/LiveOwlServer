@@ -1,14 +1,10 @@
 package com.server.liveowl.util;
-import jakarta.persistence.criteria.CriteriaBuilder;
-
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class UdpHandler {
-    public static final int maxDatagramPacketLength = 32768;
     public static void sendBytesArray(DatagramSocket soc, byte[] bytesArr, InetAddress addr, int port) throws IOException {
         DatagramPacket packet = new DatagramPacket(bytesArr, bytesArr.length, addr, port);
         soc.send(packet);
@@ -24,7 +20,7 @@ public class UdpHandler {
         return (messageBytes[0] & 0xff);
     }
     public static String receiveMsg(DatagramSocket soc, InetAddress addr, int port) throws IOException {
-        byte[] messageBytes = new byte[maxDatagramPacketLength];
+        byte[] messageBytes = new byte[1024];
         DatagramPacket packet = new DatagramPacket(messageBytes, messageBytes.length);
         soc.receive(packet);
         return new String(packet.getData(), 0, packet.getLength());
@@ -62,7 +58,7 @@ public class UdpHandler {
     }
 
     public static DatagramPacket getPacket(DatagramSocket soc) {
-        byte[] message = new byte[maxDatagramPacketLength];
+        byte[] message = new byte[1024];
         DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
         try {
             soc.receive(datagramPacket);
