@@ -1,6 +1,7 @@
 package com.server.liveowl.service;
 
 import com.server.liveowl.dto.AccountDetailDTO;
+import com.server.liveowl.dto.UserDTO;
 import com.server.liveowl.entity.Account;
 import com.server.liveowl.entity.AccountInfor;
 import com.server.liveowl.payload.request.SingupRequest;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +25,18 @@ public class UserService implements UserServiceImp {
     @Autowired
     AccountInforRepository accountInforRepository;
 
-    @Override
+
+@Override
+    public List<String> getAllAccountId() {
+        List<Account> allAccount = accountReposiroty.findAll();
+        List<String> allAccountId = new ArrayList<>();
+        for (Account account : allAccount) {
+            allAccountId.add(account.getAccountId());
+        }
+        return allAccountId;
+    }
+
+@Override
     public Boolean checkLogin(String email, String rawPassword) {
         List<Account> listaccount = accountReposiroty.findByEmail(email);
         if (!listaccount.isEmpty()) {

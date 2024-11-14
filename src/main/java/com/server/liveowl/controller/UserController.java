@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/users")
@@ -86,6 +88,31 @@ public class UserController {
             }
 
         } catch (Exception e) {
+            responsetdata.setData(null);
+            responsetdata.setMessage(e.getMessage());
+            return new ResponseEntity<>(responsetdata, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/allaccoutid")
+    public ResponseEntity<?> getAllAccountID() {
+        Responsedata responsetdata = new Responsedata();
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            System.out.println("email controller " + email);
+            List<String> allAccountID = userServiceImp.getAllAccountId();
+            if(allAccountID != null) {
+                responsetdata.setData(allAccountID);
+                responsetdata.setMessage("Lấy thông tin thành công");
+                return new ResponseEntity<>(responsetdata, HttpStatus.OK);
+            }
+            else {
+                responsetdata.setData(null);
+                responsetdata.setMessage("Không tìm thấy");
+                return new ResponseEntity<>(responsetdata, HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (Exception e) {
             responsetdata.setData(null);
             responsetdata.setMessage(e.getMessage());
             return new ResponseEntity<>(responsetdata, HttpStatus.INTERNAL_SERVER_ERROR);
