@@ -1,4 +1,6 @@
 package com.server.liveowl.util;
+import org.hibernate.boot.model.source.spi.AttributeSourceContainer;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -68,5 +70,9 @@ public class UdpHandler {
         return datagramPacket;
     }
 
+    public static void sendRequests(DatagramSocket socket, byte[] imageByteArray,InetAddress address, int port) throws IOException {
+        DatagramPacket packet = new DatagramPacket(imageByteArray, imageByteArray.length, address, port);
+        socket.send(packet);
+    }
 
 }
