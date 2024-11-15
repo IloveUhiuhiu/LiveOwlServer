@@ -1,0 +1,1 @@
+I N T Space T O N G Shift 9 I N T Space A Comma Space I N T Space B Shift 0 Shift Open Bracket Undefined Shift Open Bracket Backspace Undefined Shift Enter I N T Space C Space Equals Space A Space Shift Equals Space B Semicolon Enter Shift Close Bracket 
