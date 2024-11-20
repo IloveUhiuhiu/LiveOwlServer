@@ -3,6 +3,7 @@ package com.server.liveowl.entity;
 import jakarta.persistence.*;
 
 import java.sql.Blob;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
@@ -18,7 +19,7 @@ public class AccountInfor {
     private String fullName;
 
     @Column(name = "date_of_birth")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(name = "gender")
     private Boolean gender;
@@ -42,7 +43,7 @@ public class AccountInfor {
     public AccountInfor() {
 
     }
-    public AccountInfor(String accountId, String fullName, Date dateOfBirth, Boolean gender) {
+    public AccountInfor(String accountId, String fullName, LocalDate dateOfBirth, Boolean gender) {
         this.accountId = accountId;
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;
@@ -67,11 +68,11 @@ public class AccountInfor {
         this.fullName = fullName;
     }
 
-    public Date getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
