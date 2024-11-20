@@ -1,5 +1,6 @@
 package com.server.liveowl.payload.request;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 public class SingupRequest {
@@ -8,7 +9,7 @@ public class SingupRequest {
     private String password;
     private int role;
     private String fullName;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private Boolean gender;
 
 
@@ -52,11 +53,11 @@ public class SingupRequest {
         this.gender = gender;
     }
 
-    public Date getDateofbirth() {
+    public LocalDate getDateofbirth() {
         return dateOfBirth;
     }
 
-    public void setDateofbirth(Date dateOfBirth) {
+    public void setDateofbirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 }

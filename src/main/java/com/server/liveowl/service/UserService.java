@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,7 +55,7 @@ public class UserService implements UserServiceImp {
         String password = singupRequest.getPassword();
         String email = singupRequest.getEmail();
         String fullname = singupRequest.getFullname();
-        Date dateofbirth = singupRequest.getDateofbirth();
+        LocalDate dateofbirth = singupRequest.getDateofbirth();
         int role = singupRequest.getRole();
         Boolean gender = singupRequest.getGender();
 
