@@ -43,7 +43,7 @@ public class AccountInfor {
     public AccountInfor() {
 
     }
-    public AccountInfor(String accountId, String fullName, LocalDate dateOfBirth, Boolean gender) {
+    public AccountInfor(String accountId, String fullName, LocalDate dateOfBirth, Boolean gender, Blob profile) {
         this.accountId = accountId;
         this.fullName = fullName;
         this.dateOfBirth = dateOfBirth;

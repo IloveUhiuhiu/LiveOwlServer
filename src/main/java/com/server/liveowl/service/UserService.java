@@ -8,10 +8,13 @@ import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.repository.AccountInforRepository;
 import com.server.liveowl.repository.UserReposiroty;
 import com.server.liveowl.service.imp.UserServiceImp;
+import com.server.liveowl.util.BlobConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
+import java.sql.Blob;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,23 +30,28 @@ public class UserService implements UserServiceImp {
     AccountInforRepository accountInforRepository;
 
 
-@Override
-    public List<String> getAllAccountId() {
+    @Override
+    public List<String> getAllAccountId()
+    {
         List<Account> allAccount = accountReposiroty.findAll();
         List<String> allAccountId = new ArrayList<>();
-        for (Account account : allAccount) {
+        for (Account account : allAccount)
+        {
             allAccountId.add(account.getAccountId());
         }
         return allAccountId;
     }
 
-@Override
-    public Boolean checkLogin(String email, String rawPassword) {
+    @Override
+    public Boolean checkLogin(String email, String rawPassword)
+    {
         List<Account> listaccount = accountReposiroty.findByEmail(email);
-        if (!listaccount.isEmpty()) {
+        if (!listaccount.isEmpty())
+        {
             Account account = listaccount.get(0);
             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-            if (passwordEncoder.matches(rawPassword, account.getPassword())) {
+            if (passwordEncoder.matches(rawPassword, account.getPassword()))
+            {
                 return true;
             }
         }
@@ -51,7 +59,8 @@ public class UserService implements UserServiceImp {
     }
 
     @Override
-    public Boolean addUser(SingupRequest singupRequest) {
+    public Boolean addUser(SingupRequest singupRequest)
+    {
         String password = singupRequest.getPassword();
         String email = singupRequest.getEmail();
         String fullname = singupRequest.getFullname();
@@ -61,34 +70,48 @@ public class UserService implements UserServiceImp {
 
         List<Account> listaccount = accountReposiroty.findByEmail(email);
 
-        if (listaccount.size() == 0) {
-                BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-                String hashedPassword = passwordEncoder.encode(password);
-                String accountId = UUID.randomUUID().toString().substring(0,8);
+        if (listaccount.size() == 0)
+        {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            String hashedPassword = passwordEncoder.encode(password);
+            String accountId = UUID.randomUUID().toString().substring(0, 8);
+            Blob default_avt = null;
+            try (InputStream inputStream = getClass().getResourceAsStream("/image/default_avt.png"))
+            {
+                if (inputStream == null)
+                {
+                    throw new Exception("Image not found");
+                }
+                default_avt = new javax.sql.rowset.serial.SerialBlob(inputStream.readAllBytes());
+            }
+            catch (Exception e)
+            {
+                System.out.println(e.getMessage());
+            }
+            Account account = new Account(accountId, email, hashedPassword, role);
+            AccountInfor accountInfor = new AccountInfor(accountId, fullname, dateofbirth, gender, default_avt);
 
-                Account account = new Account(accountId,email,hashedPassword,role);
-
-
-                AccountInfor accountInfor = new AccountInfor(accountId,fullname,dateofbirth,gender);
-
-                accountInfor.setAccount(account);  // Liên kết AccountInfor với Account
-                account.setAccountInfor(accountInfor);  // Liên kết Account với AccountInfor
-                accountReposiroty.save(account);  // Lưu account vào cơ sở dữ liệu
-                return true;
+            accountInfor.setAccount(account);  // Liên kết AccountInfor với Account
+            account.setAccountInfor(accountInfor);  // Liên kết Account với AccountInfor
+            accountReposiroty.save(account);  // Lưu account vào cơ sở dữ liệu
+            return true;
         }
         return false;
     }
 
 
-    public Account getAccountByEmail(String email) {
+    public Account getAccountByEmail(String email)
+    {
         List<Account> listaccount = accountReposiroty.findByEmail(email);
-        if (listaccount.isEmpty()) {
+        if (listaccount.isEmpty())
+        {
             return null;
         }
         return listaccount.get(0);
     }
     @Override
-    public int getUserRole(String email) {
+    public int getUserRole(String email)
+    {
         int role = accountReposiroty.findByEmail(email).get(0).getRole();
         return role;
     }
@@ -96,19 +119,32 @@ public class UserService implements UserServiceImp {
     @Override
     public AccountDetailDTO getAccountDetail(String email) {
         List<Account> account = accountReposiroty.findByEmail(email);
-        if (account != null && !account.isEmpty()) {
+        if (account != null && !account.isEmpty())
+        {
             AccountInfor accountInfor = accountInforRepository.findByAccountId(account.get(0).getAccountId());
+            BlobConverter b = new BlobConverter();
+            String profile = null;
+            try
+            {
+                profile = b.blobToBase64(accountInfor.getProfile());
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
             return new AccountDetailDTO(
                     account.get(0).getAccountId(),
                     account.get(0).getEmail(),
                     account.get(0).getRole(),
                     accountInfor.getFullName(),
-                    accountInfor.getDateOfBirth(),  // Handle date conversion
+                    accountInfor.getDateOfBirth(),
                     accountInfor.getGender(),
-                    accountInfor.getProfile(),
-                    accountInfor.getCreateAt(),  // Handle date conversion
+                    profile,
+                    accountInfor.getCreateAt(),
                     accountInfor.getUpdateAt());
-        } else {
+        }
+        else
+        {
             return null;
         }
     }
