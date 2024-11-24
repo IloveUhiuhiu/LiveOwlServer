@@ -14,4 +14,5 @@ public interface UserServiceImp {
     int getUserRole(String email);
     Account getAccountByEmail(String email);
     AccountDetailDTO getAccountDetail(String email);
+    Account getAccountById(String accountId);
 }

@@ -59,6 +59,16 @@ public class ExamController {
             return ResponseEntity.status(NOT_FOUND).body(new Responsedata(e.getMessage(),null));
         }
     }
+    @GetMapping("/getByCode/{code}")
+    public ResponseEntity<Responsedata> getExamByCode (@PathVariable String code) {
+        try {
+            Exam exam = examServiceImp.getExamByCode(code);
+            ExamDTO examDTO = examServiceImp.convertToDto(exam);
+            return ResponseEntity.ok(new Responsedata("Lấy bài thi thành công!",examDTO));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(NOT_FOUND).body(new Responsedata(e.getMessage(),null));
+        }
+    }
 
     @PostMapping("/add")
     public ResponseEntity<Responsedata> addExam (@RequestBody AddExamRequest request) {

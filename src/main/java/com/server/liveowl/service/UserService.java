@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.sql.rowset.serial.SerialBlob;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.time.LocalDate;
@@ -76,16 +78,19 @@ public class UserService implements UserServiceImp {
             String hashedPassword = passwordEncoder.encode(password);
             String accountId = UUID.randomUUID().toString().substring(0, 8);
             Blob default_avt = null;
-            try (InputStream inputStream = getClass().getResourceAsStream("/image/default_avt.png"))
-            {
-                if (inputStream == null)
-                {
+            try (InputStream inputStream = getClass().getResourceAsStream("/image/default_avt.png");
+                 ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                if (inputStream == null) {
                     throw new Exception("Image not found");
                 }
-                default_avt = new javax.sql.rowset.serial.SerialBlob(inputStream.readAllBytes());
-            }
-            catch (Exception e)
-            {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    baos.write(buffer, 0, bytesRead);
+                }
+                byte[] imageBytes = baos.toByteArray(); // Chuyển đổi thành mảng byte
+                default_avt = new SerialBlob(imageBytes);
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
             Account account = new Account(accountId, email, hashedPassword, role);
@@ -148,4 +153,11 @@ public class UserService implements UserServiceImp {
             return null;
         }
     }
+
+    @Override
+    public Account getAccountById(String accountId) {
+        return accountReposiroty.findByAccountId(accountId);
+    }
+
+
 }
