@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 public class ServerKeylogger implements Runnable {
     private static final int PORT = 12345;
-    private static final String LOG_DIRECTORY = "D:/PBL4/LiveOwlServer/src/main/java/com/server/liveowl/Keylogger";
+    private static final String LOG_DIRECTORY = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\Keylogger\\";
     private static final int MAX_THREADS = 25;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
 

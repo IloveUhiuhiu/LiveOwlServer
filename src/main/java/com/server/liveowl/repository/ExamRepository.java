@@ -14,4 +14,5 @@ import java.util.UUID;
 public interface ExamRepository extends JpaRepository<Exam, String> {
 
     List<Exam> findByAccount(Account account);
+    Exam getExamByCodeOfExam(String code);
 }

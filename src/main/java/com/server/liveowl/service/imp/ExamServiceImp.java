@@ -18,4 +18,5 @@ public interface ExamServiceImp {
     void deleteExamById(String examId);
     List<ExamDTO> getConvertedExams(List<Exam> exams);
     ExamDTO convertToDto(Exam exam);
+    Exam getExamByCode(String code);
 }
