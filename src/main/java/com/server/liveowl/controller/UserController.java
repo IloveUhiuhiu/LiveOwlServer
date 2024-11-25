@@ -3,6 +3,7 @@ package com.server.liveowl.controller;
 import com.server.liveowl.dto.AccountDetailDTO;
 import com.server.liveowl.dto.TokenDTO;
 import com.server.liveowl.entity.Account;
+import com.server.liveowl.payload.request.UploadAvtRequest;
 import com.server.liveowl.payload.response.Responsedata;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.service.imp.UserServiceImp;
@@ -121,4 +122,34 @@ public class UserController {
             return new ResponseEntity<>(responsetdata, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping("/uploadavt")
+    public ResponseEntity<?> uploadAVT(@RequestBody UploadAvtRequest uploadAvtRequest)
+    {
+        Responsedata responsetdata = new Responsedata();
+        try
+        {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            System.out.println("email controller " + email);
+            if(userServiceImp.uploadAVT(email, uploadAvtRequest))
+            {
+                responsetdata.setData(null);
+                responsetdata.setMessage("Thay đổi thành công");
+                return new ResponseEntity<>(responsetdata, HttpStatus.OK);
+            }
+            else
+            {
+                responsetdata.setData(null);
+                responsetdata.setMessage("Thay đổi thấy bại");
+                return new ResponseEntity<>(responsetdata, HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (Exception e)
+        {
+            responsetdata.setData(null);
+            responsetdata.setMessage(e.getMessage());
+            return new ResponseEntity<>(responsetdata, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
