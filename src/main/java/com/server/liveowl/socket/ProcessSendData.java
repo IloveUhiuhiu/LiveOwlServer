@@ -13,8 +13,8 @@ class ProcessSendData implements Runnable {
     DatagramSocket socket;
     public InetAddress addressTeacher;
     public int portTeacher;
-    ProcessSendData(DatagramPacket packet) throws SocketException {
-        socket = new DatagramSocket(9080);
+    ProcessSendData(DatagramPacket packet,int countConnection) throws SocketException {
+        socket = new DatagramSocket(9500 + countConnection);
         addressTeacher = packet.getAddress();
         portTeacher = packet.getPort();
     }
@@ -27,38 +27,38 @@ class ProcessSendData implements Runnable {
                     byte[] imageByteArray = SocketServer.imageBuffer.get(packetId);
                     int pos = packetId.lastIndexOf(":");
                     int imageId = Integer.parseInt(packetId.substring(0, pos));
-                    int clientId = Integer.parseInt(packetId.substring(pos + 1));
+                    String clientId = packetId.substring(pos + 1);
                     int sequenceNumber = 0;
                     boolean flag;
                     int length = imageByteArray.length;
                     byte[] lengthBytes = new byte[maxDatagramPacketLength];
                     lengthBytes[0] = (byte) 0;
-                    lengthBytes[1] = (byte) (clientId);
-                    lengthBytes[2] = (byte) (imageId);
-                    lengthBytes[3] = (byte) (length >> 16);
-                    lengthBytes[4] = (byte) (length >> 8);
-                    lengthBytes[5] = (byte) (length);
-                    lengthBytes[6] = (byte) ((length + maxDatagramPacketLength - 6) / (maxDatagramPacketLength - 5));
+                    System.arraycopy(clientId.getBytes(), 0, lengthBytes, 1, 8);
+                    lengthBytes[9] = (byte) (imageId);
+                    lengthBytes[10] = (byte) (length >> 16);
+                    lengthBytes[11] = (byte) (length >> 8);
+                    lengthBytes[12] = (byte) (length);
                     UdpHandler.sendBytesArray(socket, lengthBytes, addressTeacher, portTeacher);
-                    for (int i = 0; i < length; i = i + maxDatagramPacketLength - 5) {
+                    for (int i = 0; i < length; i = i + maxDatagramPacketLength - 12) {
                         sequenceNumber += 1;
                         byte[] message = new byte[maxDatagramPacketLength];
                         message[0] = (byte) (1);
-                        message[1] = (byte) (clientId);
-                        message[2] = (byte) (imageId);
-                        message[3] = (byte) (sequenceNumber);
-                        if ((i + maxDatagramPacketLength - 5) >= imageByteArray.length) {
+                        System.arraycopy(clientId.getBytes(), 0, message, 1, 8);
+
+                        message[9] = (byte) (imageId);
+                        message[10] = (byte) (sequenceNumber);
+                        if ((i + maxDatagramPacketLength - 12) >= imageByteArray.length) {
                             flag = true;
-                            message[4] = (byte) (1);
+                            message[11] = (byte) (1);
                         } else {
                             flag = false;
-                            message[4] = (byte) (0);
+                            message[11] = (byte) (0);
                         }
 
                         if (!flag) {
-                            System.arraycopy(imageByteArray, i, message, 5, maxDatagramPacketLength - 5);
+                            System.arraycopy(imageByteArray, i, message, 12, maxDatagramPacketLength - 12);
                         } else {
-                            System.arraycopy(imageByteArray, i, message, 5, length - i);
+                            System.arraycopy(imageByteArray, i, message, 12, length - i);
                         }
                         UdpHandler.sendBytesArray(socket, message, addressTeacher, portTeacher);
                     }

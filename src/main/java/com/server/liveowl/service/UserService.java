@@ -181,4 +181,11 @@ public class UserService implements UserServiceImp {
         }
 
     }
+
+    @Override
+    public Account getAccountById(String accountId) {
+        return accountReposiroty.findByAccountId(accountId);
+    }
+
+
 }
