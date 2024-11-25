@@ -137,7 +137,6 @@ class ProcessGetData implements Runnable {
                     portStudents.remove(clientId);
                     addressStudents.remove(clientId);
                     System.out.println("remove address và port thành công");
-                    Thread.sleep(1000);
                     Iterator<String> iterator = SocketServer.imageBuffer.keySet().iterator();
                     while (iterator.hasNext()) {
                         String key = iterator.next();
@@ -147,8 +146,15 @@ class ProcessGetData implements Runnable {
                             iterator.remove();
                         }
                     }
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        disconnect.remove(clientId);
+                    }).start();
 
-                    disconnect.remove(clientId);
                     System.out.println("remove từ buffer");
                     UdpHandler.sendRequests(theSocket2,numberBytes,addressTeacher, portTeacher);
                 }
