@@ -16,4 +16,5 @@ public interface UserServiceImp {
     Account getAccountByEmail(String email);
     AccountDetailDTO getAccountDetail(String email);
     boolean uploadAVT(String email, UploadAvtRequest uploadAvtRequest);
+    Account getAccountById(String accountId);
 }

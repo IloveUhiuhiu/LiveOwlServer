@@ -76,7 +76,7 @@ public class ExamService implements ExamServiceImp {
     }
     @Override
     public List<ExamDTO> getConvertedExams(List<Exam> exams){
-        return  exams.stream().map(this::convertToDto).toList();
+        return  exams.stream().map(this::convertToDto).collect(Collectors.toList());
     }
     @Override
     public ExamDTO convertToDto(Exam exam) {
@@ -89,6 +89,11 @@ public class ExamService implements ExamServiceImp {
                 exam.getCodeOfExam()
         );
         return examDTO;
+    }
+
+    @Override
+    public Exam getExamByCode(String code) {
+        return examRepository.getExamByCodeOfExam(code);
     }
 
 }
