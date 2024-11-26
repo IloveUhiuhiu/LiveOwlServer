@@ -2,7 +2,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: 0987654321qa
+    password: 21012004
     url: jdbc:mysql://127.0.0.1:3306/liveowl
   jpa:
     hibernate:
