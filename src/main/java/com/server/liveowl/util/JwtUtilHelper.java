@@ -77,8 +77,10 @@ public class JwtUtilHelper {
     public String getTokenFromHeader(HttpServletRequest request )
     {
         String header = request.getHeader("Authorization");
+        //System.out.println(request.getHeader("Authorization"));
+        //System.out.println(header);
         String token = null;
-        if(header != null || header.startsWith("Bearer "))
+        if(header != null && header.startsWith("Bearer "))
         {
             token = header.substring(7);
         }

@@ -1,11 +1,10 @@
 package com.server.liveowl.util;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.Base64;
 
 public class BlobConverter {
@@ -36,5 +35,23 @@ public static Blob bytesToBlob(byte[] data, Connection connection) throws Except
     blob.setBytes(1, data);
     return blob;
 }
+
+public static SerialBlob createBlobFromInputStream(InputStream inputStream) throws IOException, SQLException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+
+        // Đọc dữ liệu từ InputStream vào ByteArrayOutputStream
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            byteArrayOutputStream.write(buffer, 0, bytesRead);
+        }
+
+        // Chuyển đổi dữ liệu thành mảng byte
+        byte[] byteData = byteArrayOutputStream.toByteArray();
+
+        // Tạo SerialBlob từ mảng byte
+        return new SerialBlob(byteData);
+}
+
 
 }

@@ -55,15 +55,18 @@ public class ResultService implements ResultServiceImp {
 
     @Override
     public Result addResult(AddResultRequest request, Account account) {
-        Account student = userService.getAccountById(request.getStudentId());
-        Exam exam = examService.getExamById(request.getExamId());
-        Result result = new Result();
-        result.setAccount(student);
-        result.setExam(exam);
-        result.setLinkKeyBoard(request.getLinkKeyBoard());
-        result.setLinkVideo(request.getLinkVideo());
-        result.setResultId(UUID.randomUUID().toString().substring(0, 8));
-        return  resultRepository.save(result);
+//        Account student = userService.getAccountById(request.getStudentId());
+//        Exam exam = examService.getExamById(request.getExamId());
+//        Result result = new Result();
+//        result.setAccount(student);
+//        result.setExam(exam);
+//        result.setLinkKeyBoard(request.getLinkKeyBoard());
+//        result.setLinkVideo(request.getLinkVideo());
+//        result.setResultId(UUID.randomUUID().toString().substring(0, 8));
+//        return  resultRepository.save(result);
+        String resultId = UUID.randomUUID().toString().substring(0, 8);
+        resultRepository.saveToResultTable(resultId,request.getLinkVideo(),request.getLinkKeyBoard(),request.getStudentId(),request.getExamId());
+        return getResultById(resultId);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.server.liveowl.socket;
 
 import com.server.liveowl.dto.ImageDTO;
 import com.server.liveowl.util.UdpHandler;
+import org.opencv.videoio.VideoWriter;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -23,7 +24,7 @@ class ProcessGetData implements Runnable {
     Map<String, Integer> portStudents = new HashMap<>();
     Map<String, InetAddress> addressStudents = new HashMap<>();
     Map<String, Boolean> disconnect = new HashMap<>();
-
+    public Map<String, VideoWriter> videoWriters = new HashMap<>();
     public ProcessGetData(DatagramSocket theSocket, DatagramSocket theSocket2, DatagramPacket thePacket, String code, int numberOfProcess) throws IOException {
         this.theSocket = theSocket;
         this.theSocket2 = theSocket2;
@@ -104,7 +105,7 @@ class ProcessGetData implements Runnable {
                     }
                 } else if (packetType == 3) {
                     System.out.println("send exit to student");
-                    SocketServer.videoWriters.forEach((integer, videoWriter) -> {
+                    videoWriters.forEach((integer, videoWriter) -> {
                         videoWriter.release();
                         System.out.println("Đã giải phóng VideoWriter cho clientId: " + integer);
                     });

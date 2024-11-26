@@ -15,9 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.sql.rowset.serial.SerialBlob;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -85,7 +89,7 @@ public class UserService implements UserServiceImp {
                 {
                     throw new Exception("Image not found");
                 }
-                default_avt = new javax.sql.rowset.serial.SerialBlob(inputStream.readAllBytes());
+                default_avt = BlobConverter.createBlobFromInputStream(inputStream);
             }
             catch (Exception e)
             {
@@ -101,7 +105,6 @@ public class UserService implements UserServiceImp {
         }
         return false;
     }
-
 
     public Account getAccountByEmail(String email)
     {
