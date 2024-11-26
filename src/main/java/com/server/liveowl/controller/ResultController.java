@@ -11,10 +11,15 @@ import com.server.liveowl.service.imp.UserServiceImp;
 import com.server.liveowl.util.JwtUtilHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
@@ -38,9 +43,9 @@ public class ResultController {
     @ModelAttribute
     public void setUserInfo(HttpServletRequest request) {
         String jwtToken = jwtUtilHelper.getTokenFromHeader(request);
+        System.out.println("Tokent " + jwtToken);
         String email = jwtUtilHelper.getEmailFromToken(jwtToken);
         account = userServiceImp.getAccountByEmail(email);
-
     }
     @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/all/{examId}")
@@ -77,6 +82,22 @@ public class ResultController {
             return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new Responsedata(e.getMessage(),null));
         }
 
+    }
+
+    @GetMapping("/video/{folder}/{video}")
+    public ResponseEntity<FileSystemResource> getVideo(@PathVariable String folder, @PathVariable String video) {
+        File videoFile = new File("E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\_" + folder + "\\video_" + video + ".mp4");
+        System.out.println("E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\_" + folder + "\\video_" + video + ".mp4");
+        if (!videoFile.exists()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        FileSystemResource resource = new FileSystemResource(videoFile);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + videoFile.getName() + "\"")
+                .contentType(MediaType.valueOf("video/mp4"))
+                .contentLength(videoFile.length())
+                .body(resource);
     }
 
 }
