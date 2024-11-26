@@ -5,6 +5,7 @@ import com.server.liveowl.entity.Account;
 import com.server.liveowl.payload.request.SingupRequest;
 import com.server.liveowl.payload.request.UploadAvtRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface UserServiceImp {
@@ -15,6 +16,7 @@ public interface UserServiceImp {
     int getUserRole(String email);
     Account getAccountByEmail(String email);
     AccountDetailDTO getAccountDetail(String email);
-    boolean uploadAVT(String email, UploadAvtRequest uploadAvtRequest);
+    boolean uploadAVT(String email, String imageBase64);
     Account getAccountById(String accountId);
+    boolean updateInfo(String emailTonken, String name, String emailnew, LocalDate dateofbirth, Boolean gender);
 }

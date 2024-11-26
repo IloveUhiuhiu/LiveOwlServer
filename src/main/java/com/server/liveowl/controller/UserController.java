@@ -3,6 +3,7 @@ package com.server.liveowl.controller;
 import com.server.liveowl.dto.AccountDetailDTO;
 import com.server.liveowl.dto.TokenDTO;
 import com.server.liveowl.entity.Account;
+import com.server.liveowl.payload.request.UpdateInfoRequest;
 import com.server.liveowl.payload.request.UploadAvtRequest;
 import com.server.liveowl.payload.response.Responsedata;
 import com.server.liveowl.payload.request.SingupRequest;
@@ -15,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @CrossOrigin("*")
@@ -126,12 +128,12 @@ public class UserController {
     @PostMapping("/uploadavt")
     public ResponseEntity<?> uploadAVT(@RequestBody UploadAvtRequest uploadAvtRequest)
     {
+        String imageBase64 = uploadAvtRequest.getImage();
         Responsedata responsetdata = new Responsedata();
         try
         {
             String email = SecurityContextHolder.getContext().getAuthentication().getName();
-            System.out.println("email controller " + email);
-            if(userServiceImp.uploadAVT(email, uploadAvtRequest))
+            if(userServiceImp.uploadAVT(email, imageBase64))
             {
                 responsetdata.setData(null);
                 responsetdata.setMessage("Thay đổi thành công");
@@ -151,5 +153,40 @@ public class UserController {
             return new ResponseEntity<>(responsetdata, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping("/updateinfo")
+    public ResponseEntity<?> updateInfo(@RequestBody UpdateInfoRequest updateInfoRequest)
+    {
+        String name = updateInfoRequest.getName();
+        String emailnew = updateInfoRequest.getEmail();
+        LocalDate dateofbirth = updateInfoRequest.getDateofbirth();
+        Boolean gender = updateInfoRequest.getGender();
+
+        Responsedata responsetdata = new Responsedata();
+        try
+        {
+            String emailToken = SecurityContextHolder.getContext().getAuthentication().getName();
+            if(userServiceImp.updateInfo(emailToken, name, emailnew, dateofbirth, gender))
+            {
+                responsetdata.setData(null);
+                responsetdata.setMessage("Thay đổi thành công");
+                return new ResponseEntity<>(responsetdata, HttpStatus.OK);
+            }
+            else
+            {
+                responsetdata.setData(null);
+                responsetdata.setMessage("Thay đổi thấy bại");
+                return new ResponseEntity<>(responsetdata, HttpStatus.NOT_FOUND);
+            }
+        }
+        catch (Exception e)
+        {
+            responsetdata.setData(null);
+            responsetdata.setMessage(e.getMessage());
+            return new ResponseEntity<>(responsetdata, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
 
 }
