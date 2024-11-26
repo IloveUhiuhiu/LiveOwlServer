@@ -1,6 +1,7 @@
 package com.server.liveowl.payload.request;
 
-public class UploadAvtRequest {
+public class UploadAvtRequest
+{
     private String image;
 
     public String getImage() {
