@@ -53,8 +53,8 @@ public class ResultService implements ResultServiceImp {
         return  results.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    @Override
-    public Result addResult(AddResultRequest request, Account account) {
+//    @Override
+//    public Result addResult(AddResultRequest request, Account account) {
 //        Account student = userService.getAccountById(request.getStudentId());
 //        Exam exam = examService.getExamById(request.getExamId());
 //        Result result = new Result();
@@ -64,9 +64,25 @@ public class ResultService implements ResultServiceImp {
 //        result.setLinkVideo(request.getLinkVideo());
 //        result.setResultId(UUID.randomUUID().toString().substring(0, 8));
 //        return  resultRepository.save(result);
+//    }
+
+    @Override
+    public Result addResult(AddResultRequest request, Account account) {
         String resultId = UUID.randomUUID().toString().substring(0, 8);
-        resultRepository.saveToResultTable(resultId,request.getLinkVideo(),request.getLinkKeyBoard(),request.getStudentId(),request.getExamId());
-        return getResultById(resultId);
+        userService.getAccountById(request.getStudentId());
+        examService.getExamById(request.getExamId());
+        resultRepository.insertResult(
+                resultId,
+                request.getLinkVideo(),
+                request.getLinkKeyBoard(),
+                request.getStudentId(),
+                request.getExamId()
+        );
+        Result result = new Result();
+        result.setResultId(resultId);
+        result.setLinkVideo(request.getLinkVideo());
+        result.setLinkKeyBoard(request.getLinkKeyBoard());
+        return result;
     }
 
     @Override

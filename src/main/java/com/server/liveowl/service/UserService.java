@@ -156,7 +156,7 @@ public class UserService implements UserServiceImp {
     }
 
     @Override
-    public boolean uploadAVT(String email, UploadAvtRequest uploadAvtRequest)
+    public boolean uploadAVT(String email, String imageBase64)
     {
         List<Account> listaccount = accountReposiroty.findByEmail(email);
         if (listaccount.isEmpty())
@@ -171,7 +171,6 @@ public class UserService implements UserServiceImp {
         BlobConverter b = new BlobConverter();
         try(Connection connection = connectionUtil.getConnection())
         {
-            String imageBase64 = uploadAvtRequest.getImage();
             byte[] decodeBytes = Base64.getDecoder().decode(imageBase64);
             Blob imageBlod = b.bytesToBlob(decodeBytes, connection);
             String accountId = accountInfor.getAccountId();
@@ -190,5 +189,23 @@ public class UserService implements UserServiceImp {
         return accountReposiroty.findByAccountId(accountId);
     }
 
+    @Override
+    public boolean updateInfo(String emailToken, String name, String emailnew, LocalDate dateofbirth, Boolean gender) {
+        List<Account> listaccount = accountReposiroty.findByEmail(emailToken);
+        if (listaccount.isEmpty())
+        {
+            return false;
+        }
+        int account = accountReposiroty.updateAccount(listaccount.get(0).getAccountId(), emailnew);
+        AccountInfor accountInfor = accountInforRepository.findByAccountId(listaccount.get(0).getAccountId());
+        if(accountInfor == null)
+        {
+            return false;
+        }
+        int accountinfo = accountInforRepository.updateAccountInfor(listaccount.get(0).getAccountId(), name, dateofbirth, gender);
+        if(accountinfo > 0 && account > 0)
+            return true;
+        return false;
+    }
 
 }
