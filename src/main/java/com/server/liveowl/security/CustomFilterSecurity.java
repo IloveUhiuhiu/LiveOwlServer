@@ -32,10 +32,10 @@ public class CustomFilterSecurity {
                 .sessionManagement(sessionManagement ->sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("users/**").permitAll() // Cho phép truy cập không cần xác thực
-                        .anyRequest().authenticated()  // Mọi request khác phải xác thực
+                        .requestMatchers("users/**").permitAll()
+                        .anyRequest().authenticated()
                 );
-     http.addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(customJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

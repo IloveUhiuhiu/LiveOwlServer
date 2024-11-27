@@ -10,6 +10,8 @@ import com.server.liveowl.service.imp.ResultServiceImp;
 import com.server.liveowl.service.imp.UserServiceImp;
 import com.server.liveowl.util.JwtUtilHelper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -76,8 +78,9 @@ public class ResultController {
     @PostMapping("/add")
     public ResponseEntity<Responsedata> addResult (@RequestBody AddResultRequest request) {
         try {
-            Result result = resultServiceImp.addResult(request,account);
-            return ResponseEntity.ok(new Responsedata("Thêm kết quả thành công!",result));
+            System.out.println("Vào Controller");
+            resultServiceImp.addResult(request,account);
+            return ResponseEntity.ok(new Responsedata("Thêm kết quả thành công!",null));
         } catch (Exception e) {
             return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new Responsedata(e.getMessage(),null));
         }

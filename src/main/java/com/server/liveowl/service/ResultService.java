@@ -10,6 +10,9 @@ import com.server.liveowl.service.imp.ResultServiceImp;
 import com.server.liveowl.service.imp.UserServiceImp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.beans.Transient;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,7 +43,7 @@ public class ResultService implements ResultServiceImp {
 
     @Override
     public ResultDTO convertToDto(Result result) {
-        return new ResultDTO(result.getResultId(),result.getLinkVideo(),result.getLinkKeyBoard(),result.getAccount().getAccountId(),result.getExam().getExamId());
+        return new ResultDTO(result.getResultId(),result.getAccount().getAccountId(),result.getAccount().getAccountInfor().getFullName(),result.getExam().getExamId());
     }
 
     @Override
@@ -67,22 +70,26 @@ public class ResultService implements ResultServiceImp {
 //    }
 
     @Override
-    public Result addResult(AddResultRequest request, Account account) {
-        String resultId = UUID.randomUUID().toString().substring(0, 8);
-        userService.getAccountById(request.getStudentId());
-        examService.getExamById(request.getExamId());
-        resultRepository.insertResult(
-                resultId,
-                request.getLinkVideo(),
-                request.getLinkKeyBoard(),
-                request.getStudentId(),
-                request.getExamId()
-        );
-        Result result = new Result();
-        result.setResultId(resultId);
-        result.setLinkVideo(request.getLinkVideo());
-        result.setLinkKeyBoard(request.getLinkKeyBoard());
-        return result;
+    @Transactional
+    public void addResult(AddResultRequest request, Account account) {
+        System.out.println("Vào service");
+        List<String> studentId = request.getStudentId();
+        List<String> linkVideo = request.getLinkVideo();
+        List<String> linkKeyBoard = request.getLinkKeyBoard();
+        String examId = request.getExamId();
+        int length = request.getStudentId().size();
+        for (int i = 0; i < length; i++) {
+            String resultId = UUID.randomUUID().toString().substring(0, 8);
+            System.out.println(examId);
+            resultRepository.insertResult(
+                    resultId,
+                    linkVideo.get(i),
+                    linkKeyBoard.get(i),
+                    studentId.get(i),
+                    examId
+            );
+
+        }
     }
 
     @Override
