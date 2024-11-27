@@ -1,30 +1,25 @@
 package com.server.liveowl.socket;
 
 import com.server.liveowl.util.UdpHandler;
-
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
-
-import static com.server.liveowl.socket.SocketServer.maxDatagramPacketLength;
+import static com.server.liveowl.ServerConfig.*;
 
 class ProcessSendData implements Runnable {
     DatagramSocket socket;
-    public InetAddress addressTeacher;
-    public int portTeacher;
-    ProcessSendData(DatagramPacket packet,int countConnection) throws SocketException {
-        socket = new DatagramSocket(9500 + countConnection);
-        addressTeacher = packet.getAddress();
-        portTeacher = packet.getPort();
+    public ProcessGetData processGetData;
+    ProcessSendData(ProcessGetData processGetData) throws SocketException {
+        socket = new DatagramSocket(1000 + processGetData.processId);
+        this.processGetData = processGetData;
     }
     @Override
     public void run() {
-        while(true) {
-            try {
-                String packetId = SocketServer.listIds.poll();
+        try {
+            while(processGetData.isRunning()) {
+
+                String packetId = processGetData.queueSendIds.poll();
                 if (packetId != null) {
-                    byte[] imageByteArray = SocketServer.imageBuffer.get(packetId);
+                    byte[] imageByteArray = processGetData.imageBuffer.get(packetId);
                     int pos = packetId.lastIndexOf(":");
                     int imageId = Integer.parseInt(packetId.substring(0, pos));
                     String clientId = packetId.substring(pos + 1);
@@ -38,7 +33,7 @@ class ProcessSendData implements Runnable {
                     lengthBytes[10] = (byte) (length >> 16);
                     lengthBytes[11] = (byte) (length >> 8);
                     lengthBytes[12] = (byte) (length);
-                    UdpHandler.sendBytesArray(socket, lengthBytes, addressTeacher, portTeacher);
+                    UdpHandler.sendBytesArray(socket, lengthBytes, processGetData.addressTeacher, processGetData.portTeacher);
                     for (int i = 0; i < length; i = i + maxDatagramPacketLength - 12) {
                         sequenceNumber += 1;
                         byte[] message = new byte[maxDatagramPacketLength];
@@ -60,13 +55,17 @@ class ProcessSendData implements Runnable {
                         } else {
                             System.arraycopy(imageByteArray, i, message, 12, length - i);
                         }
-                        UdpHandler.sendBytesArray(socket, message, addressTeacher, portTeacher);
+                        UdpHandler.sendBytesArray(socket, message, processGetData.addressTeacher, processGetData.portTeacher);
                     }
-                    ++SocketServer.imageCount;
-                    System.out.println("Gửi thành công ảnh thứ: " + SocketServer.imageCount + "length = " + length);
                 }
-            } catch (Exception e) {
-                System.out.println("Loi khi gui anh:" + e.getMessage());
+
+            }
+        } catch (Exception e) {
+            System.out.println("Error in ProcessSendData:" + e.getMessage());
+        } finally {
+            if (socket != null) {
+                socket.close();
+                System.out.println("Close thread ProcessSendData");
             }
         }
     }

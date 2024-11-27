@@ -9,10 +9,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.server.liveowl.socket.SocketServer.maxDatagramPacketLength;
+import static com.server.liveowl.ServerConfig.*;
 
 
 public class SendVideo implements Runnable {
@@ -22,9 +19,8 @@ public class SendVideo implements Runnable {
         String code;
         String clientId;
         int imageId = 0;
-    public static String videoPath = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\";
         SendVideo(DatagramPacket packet, String code, String clientId,int countConnected) throws SocketException {
-            socket = new DatagramSocket(9512 + countConnected);
+            socket = new DatagramSocket(serverVideoPort + countConnected);
             address = packet.getAddress();
             port = packet.getPort();
             this.code = code;
@@ -107,25 +103,12 @@ public class SendVideo implements Runnable {
             }
             System.out.println("Gửi kết thúc thành công");
         }
-//        private static byte[] convertMatToBytes(Mat mat) {
-//            // Chuyển đổi hình ảnh Mat thành mảng byte
-//            byte[] imageBytes = new byte[(int) (mat.total() * mat.elemSize())];
-//            System.out.println("Gửi ảnh có độ dài " + imageBytes.length);
-//            mat.get(0, 0, imageBytes);
-//            return imageBytes;
-//        }
-    private static byte[] convertMatToBytes(Mat mat) {
-        // Danh sách để lưu các thông số nén
-        MatOfInt params = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 90); // Chất lượng nén 90
-        MatOfByte matOfByte = new MatOfByte();
-
-        // Nén Mat thành mảng byte với nén JPEG
-        Imgcodecs.imencode(".jpg", mat, matOfByte, params);
-
-        // Lấy mảng byte từ MatOfByte
-        byte[] imageBytes = matOfByte.toArray();
-
-        System.out.println("Gửi ảnh có độ dài " + imageBytes.length);
-        return imageBytes;
-    }
-    }
+        private static byte[] convertMatToBytes(Mat mat) {
+            MatOfInt params = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 90);
+            MatOfByte matOfByte = new MatOfByte();
+            Imgcodecs.imencode(".jpg", mat, matOfByte, params);
+            byte[] imageBytes = matOfByte.toArray();
+            System.out.println("Gửi ảnh có độ dài " + imageBytes.length);
+            return imageBytes;
+        }
+}
