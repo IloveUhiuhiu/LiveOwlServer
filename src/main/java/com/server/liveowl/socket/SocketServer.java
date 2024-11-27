@@ -1,9 +1,9 @@
 package com.server.liveowl.socket;
-import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.concurrent.Executors;
+
 import org.opencv.videoio.VideoWriter;
 import java.util.concurrent.ExecutorService;
 import com.server.liveowl.util.FileHandler;
@@ -57,7 +57,7 @@ public class SocketServer implements Runnable {
                 UdpHandler.sendNumber(serverSocket,processGetData.processId,address,port);
                 try {
                     if (!videoWriters.containsKey(clientId)) {
-                        videoWriters.put(clientId,new VideoWriter(ProcessSavedData.outputFilePath + "\\_" +code + "\\video_" + clientId +".mp4",
+                        videoWriters.put(clientId,new VideoWriter(videoPath + "\\_" +code + "\\video_" + clientId +".mp4",
                                 VideoWriter.fourcc('H', '2', '6', '4'), ProcessSavedData.fps,
                                 new org.opencv.core.Size(ProcessSavedData.frameWidth, ProcessSavedData.frameHeight), true));
                     } else {
@@ -70,16 +70,19 @@ public class SocketServer implements Runnable {
                 ++countConnected;
                 DatagramSocket receiveSocket = new DatagramSocket(serverPort + countConnected);
                 DatagramSocket sendSocket = new DatagramSocket(serverPort + 50 + countConnected);
-                ProcessGetData processGetData = new ProcessGetData(receiveSocket,sendSocket,packet,code,countConnected);
+                ProcessGetData processGetData = new ProcessGetData(receiveSocket,sendSocket,packet,code,clientId,countConnected);
                 ProcessSendData processSendData = new ProcessSendData(processGetData);
                 ProcessSavedData processSavedData = new ProcessSavedData(processGetData);
+                ServerKeylogger serverKeylogger = new ServerKeylogger(processGetData);
                 UdpHandler.sendNumber(serverSocket,countConnected,address,port);
                 System.out.println("Trả về số cổng thành công");
                 SocketServer.listMeeting.put(code, processGetData);
-                FileHandler.checkAndCreateFolder(ProcessSavedData.outputFilePath + "\\_" +code);
+                FileHandler.checkAndCreateFolder(videoPath + "\\_" +code);
+                FileHandler.checkAndCreateFolder(keyboardPath + "\\_" + code);
                 new Thread(processGetData).start();
                 new Thread(processSendData).start();
                 new Thread(processSavedData).start();
+                new Thread(serverKeylogger).start();
             } else {
 
             }

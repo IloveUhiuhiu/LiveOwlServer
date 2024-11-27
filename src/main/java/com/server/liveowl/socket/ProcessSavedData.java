@@ -6,7 +6,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 
 public class ProcessSavedData implements Runnable {
     public ProcessGetData processGetData;
-    public static String outputFilePath = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\";
     public static int frameWidth = 768;
     public static int frameHeight = 432;
     public static int fps = 15;

@@ -12,6 +12,6 @@ public interface ResultServiceImp {
     ResultDTO convertToDto(Result result);
     List<Result> getResultsByExam(String examId);
     List<ResultDTO> getConvertedResults(List<Result> results);
-    Result addResult(AddResultRequest request, Account account);
+    void addResult(AddResultRequest request, Account account);
     List<Result> getResultsByAccount(Account account);
 }

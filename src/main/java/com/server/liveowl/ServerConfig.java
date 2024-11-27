@@ -7,4 +7,5 @@ public class ServerConfig {
     public static int maxDatagramPacketLength = 1500;
     public static int NUM_OF_THREAD = 10;
     public static String videoPath = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\";
+    public static String keyboardPath = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\keyboard\\";
 }

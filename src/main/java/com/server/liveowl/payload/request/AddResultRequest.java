@@ -1,35 +1,36 @@
 package com.server.liveowl.payload.request;
 
+import java.util.List;
+
 public class AddResultRequest {
-        private String linkVideo;
-        private String linkKeyBoard;
-        private String studentId;
+        private List<String> linkVideo;
+        private List<String> linkKeyBoard;
+        private List<String> studentId;
         private String examId;
 
-
-        public AddResultRequest(String linkVideo, String linkKeyBoard, String studentId, String examId) {
+        public AddResultRequest(List<String> linkVideo, List<String> linkKeyBoard, List<String> studentId, String examId) {
             this.linkVideo = linkVideo;
             this.linkKeyBoard = linkKeyBoard;
             this.studentId = studentId;
             this.examId = examId;
         }
 
-        public String getLinkVideo() {
+        public List<String> getLinkVideo() {
             return linkVideo;
         }
-        public void setLinkVideo(String linkVideo) {
+        public void setLinkVideo(List<String>  linkVideo) {
             this.linkVideo = linkVideo;
         }
-        public String getLinkKeyBoard() {
+        public List<String>  getLinkKeyBoard() {
             return linkKeyBoard;
         }
-        public void setLinkKeyBoard(String linkKeyBoard) {
+        public void setLinkKeyBoard(List<String>  linkKeyBoard) {
             this.linkKeyBoard = linkKeyBoard;
         }
-        public String getStudentId() {
+        public List<String> getStudentId() {
             return studentId;
         }
-        public void setStudentId(String studentId) {
+        public void setStudentId(List<String> studentId) {
             this.studentId = studentId;
         }
         public String getExamId() {

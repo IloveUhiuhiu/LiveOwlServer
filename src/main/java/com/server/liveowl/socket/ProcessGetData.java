@@ -1,15 +1,15 @@
 package com.server.liveowl.socket;
 import static com.server.liveowl.ServerConfig.*;
 import com.server.liveowl.dto.ImageDTO;
+import com.server.liveowl.payload.request.AddResultRequest;
+import com.server.liveowl.util.ResultHandler;
 import com.server.liveowl.util.UdpHandler;
 import org.opencv.videoio.VideoWriter;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
@@ -21,23 +21,27 @@ class ProcessGetData implements Runnable {
     public final InetAddress addressTeacher;
     public final int portTeacher;
     private final String code;
+    private final String examId;
     public Map<String, Integer> portStudents = new HashMap<>();
     public Map<String, InetAddress> addressStudents = new HashMap<>();
     public Map<String, byte[]> imageBuffer = new HashMap<>();
     public ConcurrentLinkedQueue<String> queueSendIds = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
+    public Set<String> listClientIds = new HashSet<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
-    public ProcessGetData(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code, int processId) throws IOException {
+    public ProcessGetData(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code,String examId, int processId) throws IOException {
         this.receiveSocket = receiveSocket;
         this.sendSocket = sendSocket;
         this.portTeacher = thePacket.getPort();
         this.addressTeacher = thePacket.getAddress();
         this.code = code;
+        this.examId = examId;
         this.processId = processId;
     }
     public void addStudent(String clientId, DatagramPacket thePacket) {
         portStudents.put(clientId, thePacket.getPort());
         addressStudents.put(clientId, thePacket.getAddress());
+        listClientIds.add(clientId);
     }
     public synchronized boolean isRunning() {
         return running;
@@ -75,7 +79,7 @@ class ProcessGetData implements Runnable {
                 handleCameraRequest(message);
                 break;
             case 3:
-                handleTeacherExit();
+                handleTeacherExit(message);
                 break;
             case 4:
                 handleStudentExit(message);
@@ -126,11 +130,13 @@ class ProcessGetData implements Runnable {
         InetAddress address = addressStudents.get(clientId);
         UdpHandler.sendRequests(sendSocket, "camera".getBytes(), address, port);
     }
-    private void handleTeacherExit() throws IOException {
+    private void handleTeacherExit(byte[] message) throws IOException {
+        String token = new String(message,1,message.length-1);
         for (String key : portStudents.keySet()) {
             System.out.println(addressStudents.get(key) + ", " + portStudents.get(key));
             UdpHandler.sendRequests(sendSocket,"exit".getBytes(), addressStudents.get(key), portStudents.get(key) - 1000);
         }
+        addResult(token);
         handleTeacherDisconnect();
     }
     private void handleStudentExit(byte[] message) throws IOException {
@@ -192,7 +198,27 @@ class ProcessGetData implements Runnable {
             }
         }).start();
     }
+    private void addResult(String token) {
 
+            List<String> studentId = new ArrayList<>();
+            List<String> linkVideo = new ArrayList<>();
+            List<String> linkKeyBoard = new ArrayList<>();
+            for (String Id: listClientIds) {
+                System.out.println(Id);
+                System.out.println(videoPath + "\\_" +code + "\\video_" + Id + ".mp4");
+                System.out.println(keyboardPath + "\\_" +code + "\\keyboard_" + Id + ".txt");
+                studentId.add(Id);
+                linkVideo.add(videoPath + "\\_" +code + "\\video_" + Id + ".mp4");
+                linkKeyBoard.add(keyboardPath + "\\_" +code + "\\keyboard_" + Id + ".txt");
+            }
+            AddResultRequest request = new AddResultRequest(linkVideo,linkKeyBoard,studentId,examId);
+            ResultHandler.addresult(request, token);
+            System.out.println("Add Thanh Cong");
+
+
+
+
+    }
 
 
 }
