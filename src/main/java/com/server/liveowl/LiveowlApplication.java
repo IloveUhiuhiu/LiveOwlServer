@@ -2,7 +2,6 @@ package com.server.liveowl;
 
 import com.server.liveowl.Keylogger.SendFile;
 import com.server.liveowl.Keylogger.ServerKeylogger;
-import com.server.liveowl.savedvideo.SavedVideo;
 import com.server.liveowl.savedvideo.ServerVideo;
 import com.server.liveowl.socket.SocketServer;
 import org.opencv.core.Core;

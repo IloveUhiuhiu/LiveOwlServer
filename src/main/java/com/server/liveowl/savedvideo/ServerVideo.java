@@ -5,18 +5,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import static com.server.liveowl.ServerConfig.*;
 
 public class ServerVideo implements Runnable {
-    public static int NUM_OF_THREAD = 10;
+
     private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
     private static int countConnected = 0;
-    private String serverName = "localhost";
-    private int serverPort = 9512;
     private DatagramSocket serverSocket;
     public void run() {
         try {
-            serverSocket = new DatagramSocket(serverPort);
+            serverSocket = new DatagramSocket(serverVideoPort);
             while (true) {
                 System.out.println("Server video đang lắng nghe ...");
                 DatagramPacket packet = UdpHandler.getPacket(serverSocket);

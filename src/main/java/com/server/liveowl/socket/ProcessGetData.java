@@ -1,9 +1,8 @@
 package com.server.liveowl.socket;
-
+import static com.server.liveowl.ServerConfig.*;
 import com.server.liveowl.dto.ImageDTO;
 import com.server.liveowl.util.UdpHandler;
 import org.opencv.videoio.VideoWriter;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -11,178 +10,190 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static com.server.liveowl.socket.SocketServer.maxDatagramPacketLength;
 
 class ProcessGetData implements Runnable {
-    public static int numberOfProcess;
-    private final DatagramSocket theSocket;
-    private final DatagramSocket theSocket2;
-    public InetAddress addressTeacher;
-    public int portTeacher;
+    private volatile boolean running = true;
+    public final int processId;
+    private final DatagramSocket receiveSocket;
+    private final DatagramSocket sendSocket;
+    public final InetAddress addressTeacher;
+    public final int portTeacher;
     private final String code;
-    Map<String, Integer> portStudents = new HashMap<>();
-    Map<String, InetAddress> addressStudents = new HashMap<>();
-    Map<String, Boolean> disconnect = new HashMap<>();
+    public Map<String, Integer> portStudents = new HashMap<>();
+    public Map<String, InetAddress> addressStudents = new HashMap<>();
+    public Map<String, byte[]> imageBuffer = new HashMap<>();
+    public ConcurrentLinkedQueue<String> queueSendIds = new ConcurrentLinkedQueue<>();
+    public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
-    public ProcessGetData(DatagramSocket theSocket, DatagramSocket theSocket2, DatagramPacket thePacket, String code, int numberOfProcess) throws IOException {
-        this.theSocket = theSocket;
-        this.theSocket2 = theSocket2;
+    public ProcessGetData(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code, int processId) throws IOException {
+        this.receiveSocket = receiveSocket;
+        this.sendSocket = sendSocket;
         this.portTeacher = thePacket.getPort();
         this.addressTeacher = thePacket.getAddress();
         this.code = code;
-        this.numberOfProcess = numberOfProcess;
+        this.processId = processId;
     }
-    public void addStudent(String clientId, DatagramPacket thPacket) {
-        portStudents.put(clientId, thPacket.getPort());
-        addressStudents.put(clientId, thPacket.getAddress());
-        System.out.println("Client " + clientId + " added to student list with " + thPacket.getPort());
-        System.out.println(portStudents.size());
+    public void addStudent(String clientId, DatagramPacket thePacket) {
+        portStudents.put(clientId, thePacket.getPort());
+        addressStudents.put(clientId, thePacket.getAddress());
+    }
+    public synchronized boolean isRunning() {
+        return running;
+    }
+
+    public synchronized void setRunning(boolean running) {
+        this.running = running;
     }
 
     public void run() {
 
         try {
-            while(true) {
+            while(isRunning()) {
                 byte[] message = new byte[maxDatagramPacketLength];
-                UdpHandler.receiveBytesArr(theSocket,message);
-
-                int packetType = (message[0] & 0xff);
-                //System.out.println("Nhận packet từ " + packetType);
-                if (packetType == 0) {
-                    String clientId = new String(message,1,8);
-                    if (disconnect.containsKey(clientId)) {
-                        continue;
-                    }
-                    int imageId = (message[9] & 0xff);
-                    int lengthOfImage = (message[10] & 0xff) << 16 | (message[11] & 0xff) << 8 | (message[12] & 0xff);
-
-                    byte[] imageBytes = new byte[lengthOfImage];
-                    String Key = imageId + ":" + clientId;
-                    SocketServer.imageBuffer.put(Key, imageBytes);
-                    //SocketServer.numberBuffer.put(Key,numberOfPacket);
-
-                } else if (packetType == 1){
-
-                    String clientId = new String(message,1,8);
-                    //System.out.println(clientId);
-                    if (disconnect.containsKey(clientId)) {
-                        continue;
-                    }
-                    int packetId = (message[9] & 0xff);
-                    int sequenceNumber = (message[10] & 0xff);
-                    boolean isLastPacket = ((message[11] & 0xff) == 1);
-                    int destinationIndex = (sequenceNumber - 1) * (maxDatagramPacketLength - 12);
-                    String Key = packetId + ":" + clientId;
-                    if (SocketServer.imageBuffer.containsKey(Key)) {
-                        int lengthOfImage = SocketServer.imageBuffer.get(Key).length;
-                        byte[] imageBytes = SocketServer.imageBuffer.get(Key);
-                        //SocketServer.numberBuffer.put(Key, SocketServer.numberBuffer.get(Key) - 1) ;
-                        if (destinationIndex >= 0 && destinationIndex < lengthOfImage) {
-                            if (!isLastPacket && (destinationIndex + (maxDatagramPacketLength - 12) < lengthOfImage)) {
-                                System.arraycopy(message, 12, imageBytes, destinationIndex, maxDatagramPacketLength - 12);
-                            } else {
-                                System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (maxDatagramPacketLength - 12));
-                            }
-                            if (isLastPacket) {
-                                SocketServer.listIds.add(Key);
-                                SocketServer.savedImages.add(new ImageDTO(clientId, imageBytes.clone()));
-                            }
-                        } else {
-                            System.out.println("Chỉ số đích không hợp lệ: " + destinationIndex + ", lengthOfimage" + lengthOfImage);
-                        }
-                    } else {
-                        System.out.println("Lỗi ID_Paket bị xóa khỏi buffer!");
-                    }
-                } else if (packetType == 2) {
-                    try {
-                        String clientId = new String(message,1,8);
-                        int port = portStudents.get(clientId) - 1000;
-                        InetAddress address = addressStudents.get(clientId);
-                        UdpHandler.sendRequests(theSocket2, "camera".getBytes(), address, port);
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                    }
-                } else if (packetType == 3) {
-                    System.out.println("send exit to student");
-                    videoWriters.forEach((integer, videoWriter) -> {
-                        videoWriter.release();
-                        System.out.println("Đã giải phóng VideoWriter cho clientId: " + integer);
-                    });
-                    for (String key : portStudents.keySet()) {
-                        System.out.println(addressStudents.get(key) + ", " + portStudents.get(key));
-                        UdpHandler.sendRequests(theSocket2,"exit".getBytes(), addressStudents.get(key), portStudents.get(key) - 1000);
-                    }
-                    try {
-                        if (theSocket != null && !theSocket.isClosed()) {
-                            theSocket.close();
-                        }
-                        if (theSocket2 != null && !theSocket2.isClosed()) {
-                            theSocket2.close();
-                        }
-                    } catch (Exception ex) {
-                        System.out.println("Lỗi khi đóng socket: " + ex.getMessage());
-                    }
-                    SocketServer.imageBuffer.clear();
-                    portStudents.clear();
-                    addressStudents.clear();
-                    SocketServer.listMeeting.remove(code);
-                } else if (packetType == 4) {
-                    System.out.println("send exit to teacher");
-                    String clientId = new String(message,1,8);
-                    byte[] numberBytes = new byte[9];
-                    numberBytes[0] = (byte) (4);
-                    System.arraycopy(clientId.getBytes(), 0, numberBytes, 1, 8);
-                    System.out.println("ID học sinh" + clientId);
-                    disconnect.put(clientId,true);
-                    portStudents.remove(clientId);
-                    addressStudents.remove(clientId);
-                    System.out.println("remove address và port thành công");
-                    Iterator<String> iterator = SocketServer.imageBuffer.keySet().iterator();
-                    while (iterator.hasNext()) {
-                        String key = iterator.next();
-                        String clientIdTmp = key.substring(key.indexOf(":") + 1);
-                        if (clientIdTmp.equals(clientId)) {
-                            System.out.println("Đã remove nhé");
-                            iterator.remove();
-                        }
-                    }
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        disconnect.remove(clientId);
-                    }).start();
-
-                    System.out.println("remove từ buffer");
-                    UdpHandler.sendRequests(theSocket2,numberBytes,addressTeacher, portTeacher);
-                }
+                UdpHandler.receiveBytesArr(receiveSocket,message);
+                processPacket(message);
             }
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println("Error in ProcessGetData: " + e.getMessage());
         } finally {
-            try {
-                if (theSocket != null ) theSocket.close();
-                if (theSocket2 != null) theSocket2.close();
-            } catch (Exception e) {
-
-            }
+            cleanupResources();
+            System.out.println("Close thread ProcessGetData");
         }
     }
-//    public synchronized void sendRequestExitForStudent(byte[] imageByteArray,InetAddress address, int port) throws IOException {
-//        DatagramPacket packet = new DatagramPacket(imageByteArray, imageByteArray.length, address, port);
-//        theSocket2.send(packet);
-//    }
-//    public synchronized void sendRequestExitForTeacher(byte[] imageByteArray,InetAddress address, int port) throws IOException {
-//        DatagramPacket packet = new DatagramPacket(imageByteArray, imageByteArray.length, address, port);
-//        theSocket2.send(packet);
-//    }
-//    public synchronized void sendRequestCameraForStudent(byte[] imageByteArray,InetAddress address,int port) throws IOException {
-//        DatagramPacket packet = new DatagramPacket(imageByteArray, imageByteArray.length, address, port);
-//        theSocket2.send(packet);
-//    }
+    private void processPacket(byte[] message) throws IOException {
+        int packetType = (message[0] & 0xff);
+        switch (packetType) {
+            case 0:
+                handlePacketLength(message);
+                break;
+            case 1:
+                handlePacketImage(message);
+                break;
+            case 2:
+                handleCameraRequest(message);
+                break;
+            case 3:
+                handleTeacherExit();
+                break;
+            case 4:
+                handleStudentExit(message);
+                break;
+            default:
+                System.err.println("Unknown packet type: " + packetType);
+        }
+    }
+    private void handlePacketLength(byte[] message) {
+        String clientId = new String(message,1,8);
+        int imageId = (message[9] & 0xff);
+        int lengthOfImage = (message[10] & 0xff) << 16 | (message[11] & 0xff) << 8 | (message[12] & 0xff);
+        byte[] imageBytes = new byte[lengthOfImage];
+        String Key = imageId + ":" + clientId;
+        imageBuffer.put(Key, imageBytes);
+    }
+    private void handlePacketImage(byte[] message) {
+        String clientId = new String(message,1,8);
+        int packetId = (message[9] & 0xff);
+        int sequenceNumber = (message[10] & 0xff);
+        boolean isLastPacket = ((message[11] & 0xff) == 1);
+        int destinationIndex = (sequenceNumber - 1) * (maxDatagramPacketLength - 12);
+        String Key = packetId + ":" + clientId;
+        if (imageBuffer.containsKey(Key)) {
+            int lengthOfImage = imageBuffer.get(Key).length;
+            byte[] imageBytes = imageBuffer.get(Key);
+            if (destinationIndex >= 0 && destinationIndex < lengthOfImage) {
+                if (!isLastPacket && (destinationIndex + (maxDatagramPacketLength - 12) < lengthOfImage)) {
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, maxDatagramPacketLength - 12);
+                } else {
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (maxDatagramPacketLength - 12));
+                }
+                if (isLastPacket) {
+                    queueSendIds.add(Key);
+                    queueSavedImages.add(new ImageDTO(clientId, imageBytes.clone()));
+                }
+            } else {
+                System.err.println("Error destinationIndex: " + destinationIndex + ", lengthOfimage" + lengthOfImage);
+            }
+        } else {
+            System.err.println("Not found" + Key + " in imageBuffer!");
+        }
+    }
+    private void handleCameraRequest(byte[] message) throws IOException {
+        String clientId = new String(message,1,8);
+        System.out.println("request camera " + clientId);
+        int port = portStudents.get(clientId) - 1000;
+        InetAddress address = addressStudents.get(clientId);
+        UdpHandler.sendRequests(sendSocket, "camera".getBytes(), address, port);
+    }
+    private void handleTeacherExit() throws IOException {
+        for (String key : portStudents.keySet()) {
+            System.out.println(addressStudents.get(key) + ", " + portStudents.get(key));
+            UdpHandler.sendRequests(sendSocket,"exit".getBytes(), addressStudents.get(key), portStudents.get(key) - 1000);
+        }
+        handleTeacherDisconnect();
+    }
+    private void handleStudentExit(byte[] message) throws IOException {
+        String clientId = new String(message,1,8);
+        byte[] numberBytes = new byte[9];
+        numberBytes[0] = (byte) (4);
+        System.arraycopy(clientId.getBytes(), 0, numberBytes, 1, 8);
+        UdpHandler.sendRequests(sendSocket,numberBytes,addressTeacher, portTeacher);
+        handleStudentDisconnect(clientId);
+    }
+    private void cleanupResources() {
+        try {
+            if (receiveSocket != null) receiveSocket.close();
+            if (sendSocket != null) sendSocket.close();
+            if (imageBuffer != null)imageBuffer.clear();
+            if (portStudents != null) portStudents.clear();
+            if (addressStudents != null )addressStudents.clear();
+            if (SocketServer.listMeeting.containsKey(code))SocketServer.listMeeting.remove(code);
+            setRunning(false);
+        } catch (Exception e) {
+            System.err.println("Error closing resources: " + e.getMessage());
+        }
+
+
+    }
+    private void handleStudentDisconnect(String clientId) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                portStudents.remove(clientId);
+                addressStudents.remove(clientId);
+                Iterator<String> iterator = imageBuffer.keySet().iterator();
+                while (iterator.hasNext()) {
+                    String key = iterator.next();
+                    String clientIdTmp = key.substring(key.indexOf(":") + 1);
+                    if (clientIdTmp.equals(clientId)) {
+                        System.out.println("Đã remove nhé");
+                        iterator.remove();
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }).start();
+    }
+    private void handleTeacherDisconnect() {
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                videoWriters.forEach((integer, videoWriter) -> {
+                    videoWriter.release();
+                    System.out.println("Đã giải phóng VideoWriter cho clientId: " + integer);
+                });
+                cleanupResources();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }).start();
+    }
+
+
 
 }
 
