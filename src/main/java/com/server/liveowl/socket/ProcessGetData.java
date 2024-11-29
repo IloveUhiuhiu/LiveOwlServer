@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
-class ProcessGetData implements Runnable {
+public class ProcessGetData implements Runnable {
     private volatile boolean running = true;
     public final int processId;
     private final DatagramSocket receiveSocket;
@@ -29,6 +29,10 @@ class ProcessGetData implements Runnable {
     public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
     public Set<String> listClientIds = new HashSet<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
+    public String getCode()
+    {
+        return this.code;
+    }
     public ProcessGetData(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code,String examId, int processId) throws IOException {
         this.receiveSocket = receiveSocket;
         this.sendSocket = sendSocket;

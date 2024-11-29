@@ -1,0 +1,1 @@
+I N T Space M A I N Shift 9 Shift 0 Shift Open Bracket Enter I N T Space A Space Equals Space 1 Semicolon Enter I N T Space B Space Equals Space 2 Shift Semicolon Enter Backspace Backspace Shift Semicolon Backspace Semicolon Enter Shift Close Bracket 

@@ -1,5 +1,8 @@
 package com.server.liveowl.Keylogger;
 
+
+import com.server.liveowl.socket.ProcessGetData;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -8,10 +11,13 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.server.liveowl.ServerConfig.keyboardPath;
+
 public class SendFile implements Runnable {
 
 private final int port;
 private final String basePath;
+private ProcessGetData processGetData;
 
 public SendFile(int port, String basePath) {
     this.port = port;
@@ -27,7 +33,9 @@ public void run() {
                  DataInputStream dis = new DataInputStream(soc.getInputStream());
                  DataOutputStream dos = new DataOutputStream(soc.getOutputStream())) {
                 String id = dis.readUTF();
-                String filePath = basePath + id + "_keylogs.txt";
+                String code = dis.readUTF();
+                String filePath = keyboardPath + "/_" + code  + "/keyboard_" + id + ".txt";
+                System.out.println("duong dan gui file: " + filePath);
                 try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
