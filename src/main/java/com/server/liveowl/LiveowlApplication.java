@@ -2,6 +2,7 @@ package com.server.liveowl;
 
 import com.server.liveowl.Keylogger.SendFile;
 import com.server.liveowl.savedvideo.ServerVideo;
+import com.server.liveowl.socket.ServerKeylogger;
 import com.server.liveowl.socket.SocketServer;
 import org.opencv.core.Core;
 import org.springframework.boot.SpringApplication;
@@ -18,6 +19,7 @@ public class LiveowlApplication {
 		new Thread(new ServerVideo()).start();
 		new Thread(new SocketServer()).start();
 		new Thread(new SendFile(8888, "D:/PBL4/LiveOwlServer/src/main/java/com/server/liveowl/Keylogger/")).start();
+
 	}
 
 }
