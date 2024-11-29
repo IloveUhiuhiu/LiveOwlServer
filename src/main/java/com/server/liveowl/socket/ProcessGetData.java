@@ -29,6 +29,7 @@ class ProcessGetData implements Runnable {
     public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
     public Set<String> listClientIds = new HashSet<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
+
     public ProcessGetData(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code,String examId, int processId) throws IOException {
         this.receiveSocket = receiveSocket;
         this.sendSocket = sendSocket;
@@ -37,6 +38,9 @@ class ProcessGetData implements Runnable {
         this.code = code;
         this.examId = examId;
         this.processId = processId;
+    }
+    public String getCode() {
+        return this.code;
     }
     public void addStudent(String clientId, DatagramPacket thePacket) {
         portStudents.put(clientId, thePacket.getPort());
