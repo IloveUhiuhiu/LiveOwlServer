@@ -14,7 +14,7 @@ public class SocketServer implements Runnable {
     private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
     private static int countConnected = 0;
     public static DatagramSocket serverSocket = null;
-    public static Map<String, ProcessGetData> listMeeting = new HashMap<>();
+    public static Map<String, ProcessGetImage> listMeeting = new HashMap<>();
     private final static Logger audit = Logger.getLogger("requests");
     private final static Logger errors = Logger.getLogger("errors");
 
@@ -51,15 +51,15 @@ public class SocketServer implements Runnable {
                 } else {
                     UdpHandler.sendMsg(serverSocket,"success",address,port);
                 }
-                ProcessGetData processGetData = listMeeting.get(code);
+                ProcessGetImage processGetData = listMeeting.get(code);
                 Map<String, VideoWriter> videoWriters = processGetData.videoWriters;
                 processGetData.addStudent(clientId, packet);
                 UdpHandler.sendNumber(serverSocket,processGetData.processId,address,port);
                 try {
                     if (!videoWriters.containsKey(clientId)) {
                         videoWriters.put(clientId,new VideoWriter(videoPath + "\\_" +code + "\\video_" + clientId +".mp4",
-                                VideoWriter.fourcc('H', '2', '6', '4'), ProcessSavedData.fps,
-                                new org.opencv.core.Size(ProcessSavedData.frameWidth, ProcessSavedData.frameHeight), true));
+                                VideoWriter.fourcc('H', '2', '6', '4'), ProcessSaveImage.fps,
+                                new org.opencv.core.Size(ProcessSaveImage.frameWidth, ProcessSaveImage.frameHeight), true));
                     } else {
                         System.out.println("client " + clientId + " vào không phải là lần đầu!");
                     }
@@ -70,10 +70,10 @@ public class SocketServer implements Runnable {
                 ++countConnected;
                 DatagramSocket receiveSocket = new DatagramSocket(serverPort + countConnected);
                 DatagramSocket sendSocket = new DatagramSocket(serverPort + 50 + countConnected);
-                ProcessGetData processGetData = new ProcessGetData(receiveSocket,sendSocket,packet,code,clientId,countConnected);
-                ProcessSendData processSendData = new ProcessSendData(processGetData);
-                ProcessSavedData processSavedData = new ProcessSavedData(processGetData);
-                ServerKeylogger serverKeylogger = new ServerKeylogger(processGetData);
+                ProcessGetImage processGetData = new ProcessGetImage(receiveSocket,sendSocket,packet,code,clientId,countConnected);
+                ProcessSendImage processSendData = new ProcessSendImage(processGetData);
+                ProcessSaveImage processSavedData = new ProcessSaveImage(processGetData);
+                ProcessGetKey serverKeylogger = new ProcessGetKey(processGetData);
                 UdpHandler.sendNumber(serverSocket,countConnected,address,port);
                 System.out.println("Trả về số cổng thành công");
                 SocketServer.listMeeting.put(code, processGetData);

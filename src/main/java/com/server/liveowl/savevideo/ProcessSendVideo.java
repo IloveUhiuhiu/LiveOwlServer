@@ -1,4 +1,4 @@
-package com.server.liveowl.savedvideo;
+package com.server.liveowl.savevideo;
 import com.server.liveowl.util.UdpHandler;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -12,14 +12,14 @@ import java.net.SocketException;
 import static com.server.liveowl.ServerConfig.*;
 
 
-public class SendVideo implements Runnable {
+public class ProcessSendVideo implements Runnable {
         DatagramSocket socket;
         public InetAddress address;
         public int port;
         String code;
         String clientId;
         int imageId = 0;
-        SendVideo(DatagramPacket packet, String code, String clientId,int countConnected) throws SocketException {
+        ProcessSendVideo(DatagramPacket packet, String code, String clientId, int countConnected) throws SocketException {
             socket = new DatagramSocket(serverVideoPort + countConnected);
             address = packet.getAddress();
             port = packet.getPort();

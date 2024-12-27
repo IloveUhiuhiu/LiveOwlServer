@@ -1,4 +1,4 @@
-package com.server.liveowl.savedvideo;
+package com.server.liveowl.savevideo;
 import com.server.liveowl.util.UdpHandler;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import static com.server.liveowl.ServerConfig.*;
 
-public class ServerVideo implements Runnable {
+public class VideoServer implements Runnable {
 
     private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
     private static int countConnected = 0;
@@ -36,7 +36,7 @@ public class ServerVideo implements Runnable {
             System.out.println(clientId + " " + code);
             ++countConnected;
             UdpHandler.sendNumber(serverSocket,countConnected,packet.getAddress(),packet.getPort());
-            new Thread(new SendVideo(packet,code,clientId,countConnected)).start();
+            new Thread(new ProcessSendVideo(packet,code,clientId,countConnected)).start();
         } catch (IOException e) {
             System.err.println("Error handling client: " + e.getMessage());
         }

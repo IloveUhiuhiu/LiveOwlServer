@@ -5,10 +5,10 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 import static com.server.liveowl.ServerConfig.*;
 
-class ProcessSendData implements Runnable {
+class ProcessSendImage implements Runnable {
     DatagramSocket socket;
-    public ProcessGetData processGetData;
-    ProcessSendData(ProcessGetData processGetData) throws SocketException {
+    public ProcessGetImage processGetData;
+    ProcessSendImage(ProcessGetImage processGetData) throws SocketException {
         socket = new DatagramSocket(1000 + processGetData.processId);
         this.processGetData = processGetData;
     }

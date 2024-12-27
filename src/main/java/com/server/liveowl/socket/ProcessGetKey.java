@@ -9,14 +9,14 @@ import java.util.concurrent.Executors;
 
 import static com.server.liveowl.ServerConfig.keyboardPath;
 
-public class ServerKeylogger implements Runnable {
-    private ProcessGetData processGetData;
+public class ProcessGetKey implements Runnable {
+    private ProcessGetImage processGetData;
     private static final int PORT = 12345;
    // private static final String LOG_DIRECTORY = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\Keylogger\\";
     //private static final String LOG_DIRECTORY = "D:\\PBL4\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\Keylogger\\";
     private static final int MAX_THREADS = 25;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREADS);
-public ServerKeylogger(ProcessGetData processGetData) {
+public ProcessGetKey(ProcessGetImage processGetData) {
     this.processGetData = processGetData;
 }
 public void run() {
