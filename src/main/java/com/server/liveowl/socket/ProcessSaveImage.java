@@ -4,12 +4,12 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.imgcodecs.Imgcodecs;
 
-public class ProcessSavedData implements Runnable {
-    public ProcessGetData processGetData;
+public class ProcessSaveImage implements Runnable {
+    public ProcessGetImage processGetData;
     public static int frameWidth = 768;
     public static int frameHeight = 432;
     public static int fps = 15;
-    public ProcessSavedData(ProcessGetData processGetData) {
+    public ProcessSaveImage(ProcessGetImage processGetData) {
         this.processGetData = processGetData;
     }
     public void run() {
