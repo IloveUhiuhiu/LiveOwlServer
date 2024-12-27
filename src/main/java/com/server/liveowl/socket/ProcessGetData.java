@@ -29,7 +29,6 @@ class ProcessGetData implements Runnable {
     public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
     public Set<String> listClientIds = new HashSet<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
-
     public ProcessGetData(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code,String examId, int processId) throws IOException {
         this.receiveSocket = receiveSocket;
         this.sendSocket = sendSocket;
