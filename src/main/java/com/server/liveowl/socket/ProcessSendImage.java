@@ -7,24 +7,25 @@ import java.net.SocketException;
 import static com.server.liveowl.ServerConfig.*;
 
 class ProcessSendImage implements Runnable {
-    DatagramSocket socket;
-    public ProcessGetImage processGetData;
+    private DatagramSocket socket;
+    private ProcessGetImage processGetData;
     ProcessSendImage(ProcessGetImage processGetData) throws SocketException {
-        socket = new DatagramSocket(1000 + processGetData.processId);
+        socket = new DatagramSocket(1000 + processGetData.getProcessId());
         this.processGetData = processGetData;
     }
     @Override
     public void run() {
         try {
             while(processGetData.isRunning()) {
+                if (!processGetData.queueSaveImage.isEmpty()) {
+                    ImageDTO imageDto = processGetData.queueSaveImage.poll();
 
-                if (!processGetData.queueSavedImage.isEmpty()) {
-                    ImageDTO imageDto = processGetData.queueSavedImage.poll();
-                    byte[] imageByteArray = imageDto.getImage();
                     String packetId = imageDto.getClientId();
                     int pos = packetId.lastIndexOf(":");
                     int imageId = Integer.parseInt(packetId.substring(0, pos));
                     String clientId = packetId.substring(pos + 1);
+                    byte[] imageByteArray = imageDto.getImage();
+
                     int sequenceNumber = 0;
                     boolean flag;
                     int length = imageByteArray.length;
@@ -60,7 +61,6 @@ class ProcessSendImage implements Runnable {
                         UdpHandler.sendBytesArray(socket, message, processGetData.addressTeacher, processGetData.portTeacher);
                     }
                 }
-
             }
         } catch (Exception e) {
             System.out.println("Error in ProcessSendData:" + e.getMessage());

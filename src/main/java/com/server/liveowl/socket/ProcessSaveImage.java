@@ -15,8 +15,8 @@ public class ProcessSaveImage implements Runnable {
     public void run() {
         try {
             while (processGetData.isRunning()) {
-                if (!processGetData.queueSavedImage.isEmpty()) {
-                    ImageDTO imageDto = processGetData.queueSavedImage.poll();
+                if (!processGetData.queueSaveImage.isEmpty()) {
+                    ImageDTO imageDto = processGetData.queueSaveImage.poll();
                     if (imageDto.getImage() != null) {
                         System.out.println(imageDto.getClientId() + ", " + imageDto.getImage().length + " lưu video");
                         Mat frame = byteArrayToMat(imageDto.getImage());
