@@ -4,23 +4,23 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.concurrent.Executors;
 
-import org.opencv.videoio.VideoWriter;
 import java.util.concurrent.ExecutorService;
 import com.server.liveowl.util.FileHandler;
 import com.server.liveowl.util.UdpHandler;
 import static com.server.liveowl.ServerConfig.*;
 
 public class SocketServer implements Runnable {
-    private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
-    private static int countConnected = 0;
+
+
+    private static int numberOfConnect = 0;
     public static DatagramSocket serverSocket = null;
     public static Map<String, ProcessGetImage> listMeeting = new HashMap<>();
     private final static Logger audit = Logger.getLogger("requests");
     private final static Logger errors = Logger.getLogger("errors");
-
+    private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
     public void run() {
         try {
-            serverSocket = new DatagramSocket(serverPort);
+            serverSocket = new DatagramSocket(SERVER_PORT);
             while (true) {
                 System.out.println("Server đang lắng nghe ...");
                 DatagramPacket packet = UdpHandler.getPacket(serverSocket);
@@ -32,6 +32,7 @@ public class SocketServer implements Runnable {
         } finally {
             if (serverSocket != null) serverSocket.close();
             listMeeting.clear();
+            executor.shutdown();
         }
     }
 
@@ -52,39 +53,26 @@ public class SocketServer implements Runnable {
                     UdpHandler.sendMsg(serverSocket,"success",address,port);
                 }
                 ProcessGetImage processGetData = listMeeting.get(code);
-                Map<String, VideoWriter> videoWriters = processGetData.videoWriters;
                 processGetData.addStudent(clientId, packet);
                 UdpHandler.sendNumber(serverSocket,processGetData.processId,address,port);
-                try {
-                    if (!videoWriters.containsKey(clientId)) {
-                        videoWriters.put(clientId,new VideoWriter(videoPath + "\\_" +code + "\\video_" + clientId +".mp4",
-                                VideoWriter.fourcc('H', '2', '6', '4'), ProcessSaveImage.fps,
-                                new org.opencv.core.Size(ProcessSaveImage.frameWidth, ProcessSaveImage.frameHeight), true));
-                    } else {
-                        System.out.println("client " + clientId + " vào không phải là lần đầu!");
-                    }
-                } catch (Exception e) {
-                    System.out.println("Lỗi tạo videoWriter " + e.getMessage());
-                }
+
             } else if (role.equals("teacher")) {
-                ++countConnected;
-                DatagramSocket receiveSocket = new DatagramSocket(serverPort + countConnected);
-                DatagramSocket sendSocket = new DatagramSocket(serverPort + 50 + countConnected);
-                ProcessGetImage processGetData = new ProcessGetImage(receiveSocket,sendSocket,packet,code,clientId,countConnected);
+                ++numberOfConnect;
+                ProcessGetImage processGetData = new ProcessGetImage(packet,code,clientId,numberOfConnect);
                 ProcessSendImage processSendData = new ProcessSendImage(processGetData);
                 ProcessSaveImage processSavedData = new ProcessSaveImage(processGetData);
                 ProcessGetKey serverKeylogger = new ProcessGetKey(processGetData);
-                UdpHandler.sendNumber(serverSocket,countConnected,address,port);
+
+                UdpHandler.sendNumber(serverSocket,numberOfConnect,address,port);
                 System.out.println("Trả về số cổng thành công");
                 SocketServer.listMeeting.put(code, processGetData);
                 FileHandler.checkAndCreateFolder(videoPath + "\\_" +code);
                 FileHandler.checkAndCreateFolder(keyboardPath + "\\_" + code);
+
                 new Thread(processGetData).start();
                 new Thread(processSendData).start();
                 new Thread(processSavedData).start();
                 new Thread(serverKeylogger).start();
-            } else {
-
             }
 
         } catch (Exception e) {
