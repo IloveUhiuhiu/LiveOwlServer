@@ -28,7 +28,6 @@ public void run() {
                     Socket socket = serverSocket.accept();
                     threadPool.submit(() -> handleClient(socket));
                 } catch (SocketTimeoutException e) {
-                    // Không có kết nối mới trong 10 giây
                     System.out.println("Không có kết nối mới, tiếp tục lắng nghe...");
                 }
             }
