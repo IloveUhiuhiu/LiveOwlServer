@@ -16,22 +16,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 class ProcessGetImage implements Runnable {
     private volatile boolean running = true;
     public final int processId;
+    private final String code;
+    private final String examId;
+
     private final DatagramSocket receiveSocket;
     private final DatagramSocket sendSocket;
     public final InetAddress addressTeacher;
     public final int portTeacher;
-    private final String code;
-    private final String examId;
     public Map<String, Integer> portStudents = new HashMap<>();
     public Map<String, InetAddress> addressStudents = new HashMap<>();
-    public Map<String, byte[]> imageBuffer = new HashMap<>();
-    public ConcurrentLinkedQueue<String> queueSendIds = new ConcurrentLinkedQueue<>();
-    public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
-    public Set<String> listClientIds = new HashSet<>();
+
+    private Map<String, byte[]> imageBuffer = new HashMap<>();
+    public ConcurrentLinkedQueue<ImageDTO> queueSendImage = new ConcurrentLinkedQueue<>();
+    public ConcurrentLinkedQueue<ImageDTO> queueSavedImage = new ConcurrentLinkedQueue<>();
+    private Set<String> listClientIds = new HashSet<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
-    public ProcessGetImage(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code, String examId, int processId) throws IOException {
-        this.receiveSocket = receiveSocket;
-        this.sendSocket = sendSocket;
+
+    public ProcessGetImage(DatagramPacket thePacket, String code, String examId, int processId) throws IOException {
+        this.receiveSocket = new DatagramSocket(SERVER_PORT + processId);
+        this.sendSocket = new DatagramSocket(SERVER_PORT + 100 + processId);
         this.portTeacher = thePacket.getPort();
         this.addressTeacher = thePacket.getAddress();
         this.code = code;
@@ -45,6 +48,18 @@ class ProcessGetImage implements Runnable {
         portStudents.put(clientId, thePacket.getPort());
         addressStudents.put(clientId, thePacket.getAddress());
         listClientIds.add(clientId);
+
+        try {
+            if (!videoWriters.containsKey(clientId)) {
+                videoWriters.put(clientId,new VideoWriter(videoPath + "\\_" +code + "\\video_" + clientId +".mp4",
+                        VideoWriter.fourcc('H', '2', '6', '4'), ProcessSaveImage.fps,
+                        new org.opencv.core.Size(ProcessSaveImage.frameWidth, ProcessSaveImage.frameHeight), true));
+            } else {
+                System.out.println("client " + clientId + " vào không phải là lần đầu!");
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi tạo videoWriter " + e.getMessage());
+        }
     }
     public synchronized boolean isRunning() {
         return running;
@@ -58,7 +73,7 @@ class ProcessGetImage implements Runnable {
 
         try {
             while(isRunning()) {
-                byte[] message = new byte[maxDatagramPacketLength];
+                byte[] message = new byte[MAX_DATAGRAM_PACKET_LENGTH];
                 UdpHandler.receiveBytesArr(receiveSocket,message);
                 processPacket(message);
             }
@@ -104,20 +119,20 @@ class ProcessGetImage implements Runnable {
         int packetId = (message[9] & 0xff);
         int sequenceNumber = (message[10] & 0xff);
         boolean isLastPacket = ((message[11] & 0xff) == 1);
-        int destinationIndex = (sequenceNumber - 1) * (maxDatagramPacketLength - 12);
+        int destinationIndex = (sequenceNumber - 1) * (MAX_DATAGRAM_PACKET_LENGTH - 12);
         String Key = packetId + ":" + clientId;
         if (imageBuffer.containsKey(Key)) {
             int lengthOfImage = imageBuffer.get(Key).length;
             byte[] imageBytes = imageBuffer.get(Key);
             if (destinationIndex >= 0 && destinationIndex < lengthOfImage) {
-                if (!isLastPacket && (destinationIndex + (maxDatagramPacketLength - 12) < lengthOfImage)) {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, maxDatagramPacketLength - 12);
+                if (!isLastPacket && (destinationIndex + (MAX_DATAGRAM_PACKET_LENGTH - 12) < lengthOfImage)) {
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, MAX_DATAGRAM_PACKET_LENGTH - 12);
                 } else {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (maxDatagramPacketLength - 12));
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (MAX_DATAGRAM_PACKET_LENGTH - 12));
                 }
                 if (isLastPacket) {
-                    queueSendIds.add(Key);
-                    queueSavedImages.add(new ImageDTO(clientId, imageBytes.clone()));
+                    queueSendImage.add(new ImageDTO(Key, imageBytes.clone()));
+                    queueSavedImage.add(new ImageDTO(clientId, imageBytes.clone()));
                 }
             } else {
                 System.err.println("Error destinationIndex: " + destinationIndex + ", lengthOfimage" + lengthOfImage);
@@ -182,7 +197,6 @@ class ProcessGetImage implements Runnable {
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
             }
         }).start();
     }
@@ -197,7 +211,6 @@ class ProcessGetImage implements Runnable {
                 cleanupResources();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
             }
         }).start();
     }

@@ -20,7 +20,7 @@ public class ProcessSendVideo implements Runnable {
         String clientId;
         int imageId = 0;
         ProcessSendVideo(DatagramPacket packet, String code, String clientId, int countConnected) throws SocketException {
-            socket = new DatagramSocket(serverVideoPort + countConnected);
+            socket = new DatagramSocket(SERVER_VIDEO_PORT + countConnected);
             address = packet.getAddress();
             port = packet.getPort();
             this.code = code;
@@ -60,20 +60,20 @@ public class ProcessSendVideo implements Runnable {
                 int sequenceNumber = 0;
                 boolean flag;
                 int length = imageByteArray.length;
-                byte[] lengthBytes = new byte[maxDatagramPacketLength];
+                byte[] lengthBytes = new byte[MAX_DATAGRAM_PACKET_LENGTH];
                 lengthBytes[0] = (byte) 0;
                 lengthBytes[1] = (byte) (imageId);
                 lengthBytes[2] = (byte) (length >> 16);
                 lengthBytes[3] = (byte) (length >> 8);
                 lengthBytes[4] = (byte) (length);
                 UdpHandler.sendBytesArray(socket, lengthBytes, address, port);
-                for (int i = 0; i < length; i = i + maxDatagramPacketLength - 4) {
+                for (int i = 0; i < length; i = i + MAX_DATAGRAM_PACKET_LENGTH - 4) {
                     sequenceNumber += 1;
-                    byte[] message = new byte[maxDatagramPacketLength];
+                    byte[] message = new byte[MAX_DATAGRAM_PACKET_LENGTH];
                     message[0] = (byte) (1);
                     message[1] = (byte) (imageId);
                     message[2] = (byte) (sequenceNumber);
-                    if ((i + maxDatagramPacketLength - 4) >= imageByteArray.length) {
+                    if ((i + MAX_DATAGRAM_PACKET_LENGTH - 4) >= imageByteArray.length) {
                         flag = true;
                         message[3] = (byte) (1);
                     } else {
@@ -82,7 +82,7 @@ public class ProcessSendVideo implements Runnable {
                     }
 
                     if (!flag) {
-                        System.arraycopy(imageByteArray, i, message, 4, maxDatagramPacketLength - 4);
+                        System.arraycopy(imageByteArray, i, message, 4, MAX_DATAGRAM_PACKET_LENGTH - 4);
                     } else {
                         System.arraycopy(imageByteArray, i, message, 4, length - i);
                     }
@@ -95,7 +95,7 @@ public class ProcessSendVideo implements Runnable {
         }
         private void sendEnd() {
             try {
-                byte[] bytesArray = new byte[maxDatagramPacketLength];
+                byte[] bytesArray = new byte[MAX_DATAGRAM_PACKET_LENGTH];
                 bytesArray[0] = (byte) 2;
                 UdpHandler.sendBytesArray(socket, bytesArray, address, port);
             } catch (Exception e) {
