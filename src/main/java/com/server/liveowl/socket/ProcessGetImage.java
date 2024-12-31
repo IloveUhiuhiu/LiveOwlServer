@@ -227,7 +227,6 @@ class ProcessGetImage implements Runnable {
                 cleanupResources();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
             }
         }).start();
     }
