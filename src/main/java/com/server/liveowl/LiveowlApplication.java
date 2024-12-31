@@ -14,9 +14,9 @@ import static com.server.liveowl.ServerConfig.sendkeyboardPort;
 
 @SpringBootApplication
 public class LiveowlApplication {
-	static {
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-	}
+//	static {
+//		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//	}
 	public static void main(String[] args) {
 
 		SpringApplication.run(LiveowlApplication.class, args);

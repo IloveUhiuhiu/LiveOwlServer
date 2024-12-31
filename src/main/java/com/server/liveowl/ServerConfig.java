@@ -11,5 +11,4 @@ public class ServerConfig {
    // public static String keyboardPath = "E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\keyboard\\";
     public static String videoPath = "D:\\PBL4\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\";
     public static String keyboardPath = "D:\\PBL4\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\keyboard\\";
-    public static String sendkeyboardPath = "D:/PBL4/LiveOwlServer/src/main/java/com/server/liveowl/Keylogger/";
 }
