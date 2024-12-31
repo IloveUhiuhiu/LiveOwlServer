@@ -83,7 +83,7 @@ class ProcessGetImage implements Runnable {
 
         try {
             while(isRunning()) {
-                byte[] message = new byte[maxDatagramPacketLength];
+                byte[] message = new byte[MAX_DATAGRAM_PACKET_LENGTH];
                 UdpHandler.receiveBytesArr(receiveSocket,message);
                 processPacket(message);
             }
@@ -129,16 +129,16 @@ class ProcessGetImage implements Runnable {
         int packetId = (message[9] & 0xff);
         int sequenceNumber = (message[10] & 0xff);
         boolean isLastPacket = ((message[11] & 0xff) == 1);
-        int destinationIndex = (sequenceNumber - 1) * (maxDatagramPacketLength - 12);
+        int destinationIndex = (sequenceNumber - 1) * (MAX_DATAGRAM_PACKET_LENGTH - 12);
         String Key = packetId + ":" + clientId;
         if (imageBuffer.containsKey(Key)) {
             int lengthOfImage = imageBuffer.get(Key).length;
             byte[] imageBytes = imageBuffer.get(Key);
             if (destinationIndex >= 0 && destinationIndex < lengthOfImage) {
-                if (!isLastPacket && (destinationIndex + (maxDatagramPacketLength - 12) < lengthOfImage)) {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, maxDatagramPacketLength - 12);
+                if (!isLastPacket && (destinationIndex + (MAX_DATAGRAM_PACKET_LENGTH - 12) < lengthOfImage)) {
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, MAX_DATAGRAM_PACKET_LENGTH - 12);
                 } else {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (maxDatagramPacketLength - 12));
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (MAX_DATAGRAM_PACKET_LENGTH - 12));
                 }
                 if (isLastPacket) {
                     queueSendImage.add(new ImageDTO(Key, imageBytes.clone()));
@@ -227,7 +227,6 @@ class ProcessGetImage implements Runnable {
                 cleanupResources();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
             }
         }).start();
     }
@@ -239,8 +238,8 @@ class ProcessGetImage implements Runnable {
             List<String> linkKeyBoard = new ArrayList<>();
             for (String Id: listClientId) {
                 studentId.add(Id);
-                linkVideo.add(videoPath + "\\_" +code + "\\video_" + Id + ".mp4");
-                linkKeyBoard.add(keyboardPath + "\\_" +code + "\\keyboard_" + Id + ".txt");
+                linkVideo.add(VIDEO_PATH + "\\_" +code + "\\video_" + Id + ".mp4");
+                linkKeyBoard.add(KEYBOARD_PATH + "\\_" +code + "\\keyboard_" + Id + ".txt");
             }
             AddResultRequest request = new AddResultRequest(linkVideo,linkKeyBoard,studentId,examId);
             ResultHandler.addresult(request, token);
