@@ -10,13 +10,13 @@ import static com.server.liveowl.ServerConfig.*;
 public class VideoServer implements Runnable {
 
     private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
-    private static int countConnected = 0;
+    private static int numberOfConnect = 0;
     private DatagramSocket serverSocket;
     public void run() {
         try {
-            serverSocket = new DatagramSocket(serverVideoPort);
+            serverSocket = new DatagramSocket(SERVER_VIDEO_PORT);
             while (true) {
-                System.out.println("Server video đang lắng nghe ...");
+                System.out.println("VideoServer video đang lắng nghe ...");
                 DatagramPacket packet = UdpHandler.getPacket(serverSocket);
                 String connect = new String(packet.getData(), 0, packet.getLength());
                 executor.execute(() -> handleClient(packet, serverSocket, connect));
@@ -25,6 +25,7 @@ public class VideoServer implements Runnable {
             System.err.println("Lỗi server: " + e.getMessage());
         } finally {
             if (serverSocket != null) serverSocket.close();
+            executor.shutdown();
         }
     }
 
@@ -34,11 +35,12 @@ public class VideoServer implements Runnable {
             String clientId = connect.split(":")[0];
             String code = connect.split(":")[1];
             System.out.println(clientId + " " + code);
-            ++countConnected;
-            UdpHandler.sendNumber(serverSocket,countConnected,packet.getAddress(),packet.getPort());
-            new Thread(new ProcessSendVideo(packet,code,clientId,countConnected)).start();
+            ++numberOfConnect;
+
+            UdpHandler.sendNumber(serverSocket,numberOfConnect,packet.getAddress(),packet.getPort());
+            new Thread(new ProcessSendVideo(packet,code,clientId,numberOfConnect)).start();
         } catch (IOException e) {
-            System.err.println("Error handling client: " + e.getMessage());
+            System.err.println("Lỗi trong khi xử lý client: " + e.getMessage());
         }
     }
 }

@@ -1,17 +1,15 @@
 package com.server.liveowl.controller;
 
+import com.server.liveowl.ServerConfig;
 import com.server.liveowl.dto.ResultDTO;
 import com.server.liveowl.entity.Account;
 import com.server.liveowl.entity.Result;
 import com.server.liveowl.payload.request.AddResultRequest;
 import com.server.liveowl.payload.response.Responsedata;
-import com.server.liveowl.service.imp.ExamServiceImp;
 import com.server.liveowl.service.imp.ResultServiceImp;
 import com.server.liveowl.service.imp.UserServiceImp;
 import com.server.liveowl.util.JwtUtilHelper;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -31,16 +29,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RequestMapping("/results")
 public class ResultController {
     private final UserServiceImp userServiceImp;
-    private final ExamServiceImp examServiceImp;
     private final ResultServiceImp resultServiceImp;
     private final JwtUtilHelper jwtUtilHelper;
     private Account account;
     @Autowired
-    public ResultController(UserServiceImp userServiceImp,ExamServiceImp examServiceImp, ResultServiceImp resultServiceImp, JwtUtilHelper jwtUtilHelper) {
+    public ResultController(UserServiceImp userServiceImp, ResultServiceImp resultServiceImp, JwtUtilHelper jwtUtilHelper) {
         this.userServiceImp = userServiceImp;
         this.resultServiceImp = resultServiceImp;
         this.jwtUtilHelper = jwtUtilHelper;
-        this.examServiceImp = examServiceImp;
     }
     @ModelAttribute
     public void setUserInfo(HttpServletRequest request) {
@@ -52,18 +48,10 @@ public class ResultController {
     @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/all/{examId}")
     public ResponseEntity<Responsedata> getAllResultsByExam (@PathVariable String examId) {
-        //System.out.println(account.getEmail());
         List<Result> results = resultServiceImp.getResultsByExam(examId);
         List<ResultDTO> resultDTOS = resultServiceImp.getConvertedResults(results);
         return ResponseEntity.ok(new Responsedata("Lấy danh sách bài thi thành công!",resultDTOS));
     }
-//    @GetMapping("/all")
-//    public ResponseEntity<Responsedata> getAllResults () {
-//        //System.out.println(account.getEmail());
-//        List<Result> results = resultServiceImp.getResultsByAccount(account);
-//        List<ResultDTO> resultDTOS = resultServiceImp.getConvertedResults(results);
-//        return ResponseEntity.ok(new Responsedata("Lấy danh sách bài thi thành công!",resultDTOS));
-//    }
     @GetMapping("/{resultId}")
     public ResponseEntity<Responsedata> getResultById (@PathVariable String resultId) {
         try {
@@ -89,8 +77,8 @@ public class ResultController {
 
     @GetMapping("/video/{folder}/{video}")
     public ResponseEntity<FileSystemResource> getVideo(@PathVariable String folder, @PathVariable String video) {
-        File videoFile = new File("E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\_" + folder + "\\video_" + video + ".mp4");
-        System.out.println("E:\\Downloads\\LiveOwlServer\\src\\main\\java\\com\\server\\liveowl\\uploads\\video\\_" + folder + "\\video_" + video + ".mp4");
+        File videoFile = new File( ServerConfig.VIDEO_PATH + "_" + folder + "\\video_" + video + ".mp4");
+        System.out.println(ServerConfig.VIDEO_PATH + "_" + folder + "\\video_" + video + ".mp4");
         if (!videoFile.exists()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
