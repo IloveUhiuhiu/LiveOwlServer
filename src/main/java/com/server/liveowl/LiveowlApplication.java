@@ -10,11 +10,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-
 @SpringBootApplication
 public class LiveowlApplication {
 static {
 	System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//	System.out.println(System.getProperty("java.library.path"));
+//	System.loadLibrary("opencv_java4100");
 }
 public static void main(String[] args) {
 
