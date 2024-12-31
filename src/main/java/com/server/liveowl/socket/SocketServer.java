@@ -11,18 +11,17 @@ import com.server.liveowl.util.UdpHandler;
 import static com.server.liveowl.ServerConfig.*;
 
 public class SocketServer implements Runnable {
-    private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
-    private static int countConnected = 0;
-    public static DatagramSocket serverSocket = null;
+
+    private static int numberOfConnect = 0;
     public static Map<String, ProcessGetImage> listMeeting = new HashMap<>();
     private final static Logger audit = Logger.getLogger("requests");
     private final static Logger errors = Logger.getLogger("errors");
+    private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
 
     public void run() {
-        try {
-            serverSocket = new DatagramSocket(serverPort);
+        try (DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT)){
+            System.out.println("Server đang lắng nghe ...");
             while (true) {
-                System.out.println("Server đang lắng nghe ...");
                 DatagramPacket packet = UdpHandler.getPacket(serverSocket);
                 String connect = new String(packet.getData(), 0, packet.getLength());
                 executor.execute(() -> handleClient(packet, serverSocket, connect));
@@ -30,7 +29,7 @@ public class SocketServer implements Runnable {
         } catch (Exception e) {
             System.err.println("Lỗi server: " + e.getMessage());
         } finally {
-            if (serverSocket != null) serverSocket.close();
+            executor.shutdown();
             listMeeting.clear();
         }
     }
@@ -41,8 +40,10 @@ public class SocketServer implements Runnable {
             String clientId = connect.split(":")[0];
             String role = connect.split(":")[1];
             String code = connect.split(":")[2];
+
             InetAddress address = packet.getAddress();
             int port = packet.getPort();
+
             if (role.equals("student")) {
                 System.out.println("Student gửi mã: " + code);
                 if (!SocketServer.listMeeting.containsKey(code)) {
@@ -51,40 +52,28 @@ public class SocketServer implements Runnable {
                 } else {
                     UdpHandler.sendMsg(serverSocket,"success",address,port);
                 }
-                ProcessGetImage processGetData = listMeeting.get(code);
-                Map<String, VideoWriter> videoWriters = processGetData.videoWriters;
-                processGetData.addStudent(clientId, packet);
-                UdpHandler.sendNumber(serverSocket,processGetData.processId,address,port);
-                try {
-                    if (!videoWriters.containsKey(clientId)) {
-                        videoWriters.put(clientId,new VideoWriter(videoPath + "\\_" +code + "\\video_" + clientId +".mp4",
-                                VideoWriter.fourcc('H', '2', '6', '4'), ProcessSaveImage.fps,
-                                new org.opencv.core.Size(ProcessSaveImage.frameWidth, ProcessSaveImage.frameHeight), true));
-                    } else {
-                        System.out.println("client " + clientId + " vào không phải là lần đầu!");
-                    }
-                } catch (Exception e) {
-                    System.out.println("Lỗi tạo videoWriter " + e.getMessage());
-                }
-            } else if (role.equals("teacher")) {
-                ++countConnected;
-                DatagramSocket receiveSocket = new DatagramSocket(serverPort + countConnected);
-                DatagramSocket sendSocket = new DatagramSocket(serverPort + 50 + countConnected);
-                ProcessGetImage processGetData = new ProcessGetImage(receiveSocket,sendSocket,packet,code,clientId,countConnected);
-                ProcessSendImage processSendData = new ProcessSendImage(processGetData);
-                ProcessSaveImage processSavedData = new ProcessSaveImage(processGetData);
-                ProcessGetKey serverKeylogger = new ProcessGetKey(processGetData);
-                UdpHandler.sendNumber(serverSocket,countConnected,address,port);
-                System.out.println("Trả về số cổng thành công");
-                SocketServer.listMeeting.put(code, processGetData);
-                FileHandler.checkAndCreateFolder(videoPath + "\\_" +code);
-                FileHandler.checkAndCreateFolder(keyboardPath + "\\_" + code);
-                new Thread(processGetData).start();
-                new Thread(processSendData).start();
-                new Thread(processSavedData).start();
-                new Thread(serverKeylogger).start();
-            } else {
+                ProcessGetImage processGetImage = listMeeting.get(code);
+                processGetImage.addStudent(clientId, packet);
+                UdpHandler.sendNumber(serverSocket,processGetImage.getProcessId(),address,port);
 
+            } else if (role.equals("teacher")) {
+                ++numberOfConnect;
+                ProcessGetImage processGetImage = new ProcessGetImage(packet,code,clientId,numberOfConnect);
+                ProcessSendImage processSendImage = new ProcessSendImage(processGetImage);
+                ProcessSaveImage processSaveImage = new ProcessSaveImage(processGetImage);
+                ProcessGetKey processGetKey = new ProcessGetKey(processGetImage);
+
+                UdpHandler.sendNumber(serverSocket,numberOfConnect,address,port);
+                System.out.println("Trả về số cổng thành công");
+                listMeeting.put(code, processGetImage);
+
+                FileHandler.checkAndCreateFolder(VIDEO_PATH + "\\_" +code);
+                FileHandler.checkAndCreateFolder(KEYBOARD_PATH + "\\_" + code);
+
+                new Thread(processGetImage).start();
+                new Thread(processSendImage).start();
+                new Thread(processSaveImage).start();
+                new Thread(processGetKey).start();
             }
 
         } catch (Exception e) {

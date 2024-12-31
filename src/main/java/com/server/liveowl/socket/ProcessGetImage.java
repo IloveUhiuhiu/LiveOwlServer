@@ -15,25 +15,32 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ProcessGetImage implements Runnable {
     private volatile boolean running = true;
-    public final int processId;
+    private final int processId;
+    private final String code;
+    private final String examId;
+
     private final DatagramSocket receiveSocket;
     private final DatagramSocket sendSocket;
     public final InetAddress addressTeacher;
     public final int portTeacher;
-    private final String code;
-    private final String examId;
+
     public Map<String, Integer> portStudents = new HashMap<>();
     public Map<String, InetAddress> addressStudents = new HashMap<>();
+
+    private Set<String> listClientId = new HashSet<>();
     public Map<String, byte[]> imageBuffer = new HashMap<>();
-    public ConcurrentLinkedQueue<String> queueSendIds = new ConcurrentLinkedQueue<>();
-    public ConcurrentLinkedQueue<ImageDTO> queueSavedImages = new ConcurrentLinkedQueue<>();
-    public Set<String> listClientIds = new HashSet<>();
     public Map<String, VideoWriter> videoWriters = new HashMap<>();
-    public ProcessGetImage(DatagramSocket receiveSocket, DatagramSocket sendSocket, DatagramPacket thePacket, String code, String examId, int processId) throws IOException {
-        this.receiveSocket = receiveSocket;
-        this.sendSocket = sendSocket;
+    public ConcurrentLinkedQueue<ImageDTO> queueSendImage = new ConcurrentLinkedQueue<>();
+    public ConcurrentLinkedQueue<ImageDTO> queueSaveImage = new ConcurrentLinkedQueue<>();
+
+
+    public ProcessGetImage(DatagramPacket thePacket, String code, String examId, int processId) throws IOException {
+        this.receiveSocket = new DatagramSocket(SERVER_PORT + processId);
+        this.sendSocket = new DatagramSocket(SERVER_PORT + 100 + processId);
+
         this.portTeacher = thePacket.getPort();
         this.addressTeacher = thePacket.getAddress();
+
         this.code = code;
         this.examId = examId;
         this.processId = processId;
@@ -41,11 +48,29 @@ class ProcessGetImage implements Runnable {
     public String getCode() {
         return this.code;
     }
+    public int getProcessId() {
+        return this.processId;
+    }
+
     public void addStudent(String clientId, DatagramPacket thePacket) {
         portStudents.put(clientId, thePacket.getPort());
         addressStudents.put(clientId, thePacket.getAddress());
-        listClientIds.add(clientId);
+
+        listClientId.add(clientId);
+
+        try {
+            if (!videoWriters.containsKey(clientId)) {
+                videoWriters.put(clientId,new VideoWriter(VIDEO_PATH + "\\_" +code + "\\video_" + clientId +".mp4",
+                        VideoWriter.fourcc('H', '2', '6', '4'), ProcessSaveImage.fps,
+                        new org.opencv.core.Size(ProcessSaveImage.frameWidth, ProcessSaveImage.frameHeight), true));
+            } else {
+                System.out.println("client " + clientId + " đã có mặt trong videoWriters!");
+            }
+        } catch (Exception e) {
+            System.out.println("Lỗi tạo videoWriter " + e.getMessage());
+        }
     }
+
     public synchronized boolean isRunning() {
         return running;
     }
@@ -58,7 +83,7 @@ class ProcessGetImage implements Runnable {
 
         try {
             while(isRunning()) {
-                byte[] message = new byte[maxDatagramPacketLength];
+                byte[] message = new byte[MAX_DATAGRAM_PACKET_LENGTH];
                 UdpHandler.receiveBytesArr(receiveSocket,message);
                 processPacket(message);
             }
@@ -104,20 +129,20 @@ class ProcessGetImage implements Runnable {
         int packetId = (message[9] & 0xff);
         int sequenceNumber = (message[10] & 0xff);
         boolean isLastPacket = ((message[11] & 0xff) == 1);
-        int destinationIndex = (sequenceNumber - 1) * (maxDatagramPacketLength - 12);
+        int destinationIndex = (sequenceNumber - 1) * (MAX_DATAGRAM_PACKET_LENGTH - 12);
         String Key = packetId + ":" + clientId;
         if (imageBuffer.containsKey(Key)) {
             int lengthOfImage = imageBuffer.get(Key).length;
             byte[] imageBytes = imageBuffer.get(Key);
             if (destinationIndex >= 0 && destinationIndex < lengthOfImage) {
-                if (!isLastPacket && (destinationIndex + (maxDatagramPacketLength - 12) < lengthOfImage)) {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, maxDatagramPacketLength - 12);
+                if (!isLastPacket && (destinationIndex + (MAX_DATAGRAM_PACKET_LENGTH - 12) < lengthOfImage)) {
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, MAX_DATAGRAM_PACKET_LENGTH - 12);
                 } else {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (maxDatagramPacketLength - 12));
+                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (MAX_DATAGRAM_PACKET_LENGTH - 12));
                 }
                 if (isLastPacket) {
-                    queueSendIds.add(Key);
-                    queueSavedImages.add(new ImageDTO(clientId, imageBytes.clone()));
+                    queueSendImage.add(new ImageDTO(Key, imageBytes.clone()));
+                    queueSaveImage.add(new ImageDTO(clientId, imageBytes.clone()));
                 }
             } else {
                 System.err.println("Error destinationIndex: " + destinationIndex + ", lengthOfimage" + lengthOfImage);
@@ -126,6 +151,7 @@ class ProcessGetImage implements Runnable {
             System.err.println("Not found" + Key + " in imageBuffer!");
         }
     }
+
     private void handleCameraRequest(byte[] message) throws IOException {
         String clientId = new String(message,1,8);
         System.out.println("request camera " + clientId);
@@ -133,6 +159,7 @@ class ProcessGetImage implements Runnable {
         InetAddress address = addressStudents.get(clientId);
         UdpHandler.sendRequests(sendSocket, "camera".getBytes(), address, port);
     }
+
     private void handleTeacherExit(byte[] message) throws IOException {
         String token = new String(message,1,message.length-1);
         for (String key : portStudents.keySet()) {
@@ -142,6 +169,7 @@ class ProcessGetImage implements Runnable {
         addResult(token);
         handleTeacherDisconnect();
     }
+
     private void handleStudentExit(byte[] message) throws IOException {
         String clientId = new String(message,1,8);
         byte[] numberBytes = new byte[9];
@@ -150,6 +178,7 @@ class ProcessGetImage implements Runnable {
         UdpHandler.sendRequests(sendSocket,numberBytes,addressTeacher, portTeacher);
         handleStudentDisconnect(clientId);
     }
+
     private void cleanupResources() {
         try {
             if (receiveSocket != null) receiveSocket.close();
@@ -186,6 +215,7 @@ class ProcessGetImage implements Runnable {
             }
         }).start();
     }
+
     private void handleTeacherDisconnect() {
         new Thread(() -> {
             try {
@@ -201,18 +231,16 @@ class ProcessGetImage implements Runnable {
             }
         }).start();
     }
+
     private void addResult(String token) {
 
             List<String> studentId = new ArrayList<>();
             List<String> linkVideo = new ArrayList<>();
             List<String> linkKeyBoard = new ArrayList<>();
-            for (String Id: listClientIds) {
-                System.out.println(Id);
-                System.out.println(videoPath + "\\_" +code + "\\video_" + Id + ".mp4");
-                System.out.println(keyboardPath + "\\_" +code + "\\keyboard_" + Id + ".txt");
+            for (String Id: listClientId) {
                 studentId.add(Id);
-                linkVideo.add(videoPath + "\\_" +code + "\\video_" + Id + ".mp4");
-                linkKeyBoard.add(keyboardPath + "\\_" +code + "\\keyboard_" + Id + ".txt");
+                linkVideo.add(VIDEO_PATH + "\\_" +code + "\\video_" + Id + ".mp4");
+                linkKeyBoard.add(KEYBOARD_PATH + "\\_" +code + "\\keyboard_" + Id + ".txt");
             }
             AddResultRequest request = new AddResultRequest(linkVideo,linkKeyBoard,studentId,examId);
             ResultHandler.addresult(request, token);
