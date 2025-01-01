@@ -1,9 +1,5 @@
 package com.server.liveowl.entity;
-
-
 import jakarta.persistence.*;
-
-import java.util.UUID;
 
 @Entity
 public class Account {
@@ -34,6 +30,7 @@ public class Account {
         this.password = password;
         this.role = role;
     }
+
     public String getAccountId() {
         return accountId;
     }

@@ -26,12 +26,14 @@ public class ExamController {
     private final ExamServiceImp examServiceImp;
     private final JwtUtilHelper jwtUtilHelper;
     private Account account;
+
     @Autowired
     public ExamController(UserServiceImp userServiceImp, ExamServiceImp examServiceImp, JwtUtilHelper jwtUtilHelper) {
         this.userServiceImp = userServiceImp;
         this.examServiceImp = examServiceImp;
         this.jwtUtilHelper = jwtUtilHelper;
     }
+
     @ModelAttribute
     public void setUserInfo(HttpServletRequest request) {
         String jwtToken = jwtUtilHelper.getTokenFromHeader(request);
@@ -39,6 +41,7 @@ public class ExamController {
         account = userServiceImp.getAccountByEmail(email);
 
     }
+
     @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/all")
     public ResponseEntity<Responsedata> getAllExams () {
@@ -47,6 +50,8 @@ public class ExamController {
         List<ExamDTO> examDTOS = examServiceImp.getConvertedExams(exams);
         return ResponseEntity.ok(new Responsedata("Lấy danh sách bài thi thành công!",examDTOS));
     }
+
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/{examId}")
     public ResponseEntity<Responsedata> getExamById (@PathVariable String examId) {
         try {
@@ -57,6 +62,7 @@ public class ExamController {
             return ResponseEntity.status(NOT_FOUND).body(new Responsedata(e.getMessage(),null));
         }
     }
+
     @GetMapping("/getByCode/{code}")
     public ResponseEntity<Responsedata> getExamByCode (@PathVariable String code) {
         try {
@@ -68,6 +74,7 @@ public class ExamController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @PostMapping("/add")
     public ResponseEntity<Responsedata> addExam (@RequestBody AddExamRequest request) {
         try {
@@ -79,6 +86,7 @@ public class ExamController {
 
     }
 
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @PutMapping("/update/{examId}")
     public ResponseEntity<Responsedata> updateExam (@RequestBody UpdateExamRequest request, @PathVariable String examId) {
         try {
@@ -90,6 +98,7 @@ public class ExamController {
 
     }
 
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @DeleteMapping("/delete/{examId}")
     public ResponseEntity<Responsedata> deleteExam (@PathVariable String examId) {
         try {

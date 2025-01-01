@@ -19,6 +19,7 @@ public class ProcessGetKey implements Runnable {
     }
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+       
             while (processGetData.isRunning()) {
                 try {
                     serverSocket.setSoTimeout(2000); 

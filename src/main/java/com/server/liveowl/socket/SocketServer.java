@@ -3,8 +3,6 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.concurrent.Executors;
-
-import org.opencv.videoio.VideoWriter;
 import java.util.concurrent.ExecutorService;
 import com.server.liveowl.util.FileHandler;
 import com.server.liveowl.util.UdpHandler;
@@ -20,11 +18,11 @@ public class SocketServer implements Runnable {
 
     public void run() {
         try (DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT)){
-            System.out.println("Server đang lắng nghe ...");
+            System.out.println("Server đang lắng nghe trên cổng " + SERVER_PORT);
             while (true) {
                 DatagramPacket packet = UdpHandler.getPacket(serverSocket);
                 String connect = new String(packet.getData(), 0, packet.getLength());
-                executor.execute(() -> handleClient(packet, serverSocket, connect));
+                executor.execute(() -> handleClient(packet, serverSocket, connect));// xử lý mỗi khi có request đến
             }
         } catch (Exception e) {
             System.err.println("Lỗi server: " + e.getMessage());
@@ -43,32 +41,36 @@ public class SocketServer implements Runnable {
 
             InetAddress address = packet.getAddress();
             int port = packet.getPort();
-
+            // chia trường hợp request
             if (role.equals("student")) {
+                // nếu là học sinh
+                // kiểm tra listmeeting có chứa code không
+                // nếu không thì gửi chuỗi fail
+                // nếu có thì gửi chuỗi success
                 System.out.println("Student gửi mã: " + code);
                 if (!SocketServer.listMeeting.containsKey(code)) {
-                    System.out.println("Student gửi mã không có trong map");
                     UdpHandler.sendMsg(serverSocket,"fail",address,port);
                 } else {
                     UdpHandler.sendMsg(serverSocket,"success",address,port);
                 }
-                ProcessGetImage processGetImage = listMeeting.get(code);
-                processGetImage.addStudent(clientId, packet);
-                UdpHandler.sendNumber(serverSocket,processGetImage.getProcessId(),address,port);
+                ProcessGetImage processGetImage = listMeeting.get(code);// lấy luồng xử lý cuộc họp
+                processGetImage.addStudent(clientId, packet);// thêm học sinh vào luồng để quản lý
+                UdpHandler.sendNumber(serverSocket,processGetImage.getProcessId(),address,port);// gửi lại cổng mới cho hs
 
             } else if (role.equals("teacher")) {
+                // nếu là giáo viên
+                // tạo luồng nhận, gửi, lưu ảnh và nhận key
                 ++numberOfConnect;
                 ProcessGetImage processGetImage = new ProcessGetImage(packet,code,clientId,numberOfConnect);
                 ProcessSendImage processSendImage = new ProcessSendImage(processGetImage);
                 ProcessSaveImage processSaveImage = new ProcessSaveImage(processGetImage);
                 ProcessGetKey processGetKey = new ProcessGetKey(processGetImage);
 
-                UdpHandler.sendNumber(serverSocket,numberOfConnect,address,port);
-                System.out.println("Trả về số cổng thành công");
+                UdpHandler.sendNumber(serverSocket,numberOfConnect,address,port);// gửi lại cổng mới cho gv
                 listMeeting.put(code, processGetImage);
 
-                FileHandler.checkAndCreateFolder(VIDEO_PATH + "\\_" +code);
-                FileHandler.checkAndCreateFolder(KEYBOARD_PATH + "\\_" + code);
+                FileHandler.checkAndCreateFolder(VIDEO_PATH + "\\_" +code);// kiêm tra hoặc tạo folder chứa video
+                FileHandler.checkAndCreateFolder(KEYBOARD_PATH + "\\_" + code);// kiêm tra hoặc tạo folder chứa keylogger
 
                 new Thread(processGetImage).start();
                 new Thread(processSendImage).start();
@@ -77,7 +79,7 @@ public class SocketServer implements Runnable {
             }
 
         } catch (Exception e) {
-            System.err.println("Error in handleClient: " + e.getMessage());
+            System.err.println("Lỗi trong hàm handleClient: " + e.getMessage());
         }
     }
 }
