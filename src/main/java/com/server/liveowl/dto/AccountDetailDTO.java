@@ -1,10 +1,7 @@
 package com.server.liveowl.dto;
-
-import java.sql.Blob;
 import java.time.LocalDate;
-import java.util.Date;
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 public class AccountDetailDTO {
 
@@ -14,13 +11,11 @@ public class AccountDetailDTO {
     private String fullName;
     private LocalDate dateOfBirth;
     private Boolean gender;
-  //  private Blob profile;
     private String profile;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 
     // Constructor, getters, setters
-
     public AccountDetailDTO(String accountId, String email, int role, String fullName, LocalDate dateOfBirth,
                             Boolean gender, String profile, LocalDateTime createAt, LocalDateTime updateAt) {
         this.accountId = accountId;
@@ -82,16 +77,10 @@ public class AccountDetailDTO {
         this.gender = gender;
     }
 
-//    public Blob getProfile() {
-//        return profile;
-//    }
-//
-//    public void setProfile(Blob profile) {
-//        this.profile = profile;
-//    }
     public String getProfile() {
         return profile;
     }
+
     public void setProfile(String profile) {
         this.profile = profile;
     }

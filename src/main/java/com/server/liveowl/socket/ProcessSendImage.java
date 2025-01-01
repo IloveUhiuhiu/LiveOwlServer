@@ -16,9 +16,10 @@ class ProcessSendImage implements Runnable {
     @Override
     public void run() {
         try {
+            // lấy ảnh từ queueSendImage để gửi cho gv
             while(processGetData.isRunning()) {
-                if (!processGetData.queueSaveImage.isEmpty()) {
-                    ImageDTO imageDto = processGetData.queueSaveImage.poll();
+                if (!processGetData.queueSendImage.isEmpty()) {
+                    ImageDTO imageDto = processGetData.queueSendImage.poll();
 
                     String packetId = imageDto.getClientId();
                     int pos = packetId.lastIndexOf(":");
@@ -63,7 +64,7 @@ class ProcessSendImage implements Runnable {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error in ProcessSendData:" + e.getMessage());
+            System.out.println("Lỗi trong ProcessSendData:" + e.getMessage());
         } finally {
             if (socket != null) {
                 socket.close();

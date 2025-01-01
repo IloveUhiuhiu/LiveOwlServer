@@ -1,8 +1,11 @@
 package com.server.liveowl.controller;
 
 import com.server.liveowl.dto.AccountDetailDTO;
+import com.server.liveowl.dto.ExamDTO;
 import com.server.liveowl.dto.TokenDTO;
+import com.server.liveowl.dto.UserDTO;
 import com.server.liveowl.entity.Account;
+import com.server.liveowl.entity.AccountInfor;
 import com.server.liveowl.payload.request.UpdateInfoRequest;
 import com.server.liveowl.payload.request.UploadAvtRequest;
 import com.server.liveowl.payload.response.Responsedata;
@@ -18,14 +21,14 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/users")
 public class UserController {
-
     @Autowired
     UserServiceImp userServiceImp;
-
     @Autowired
     JwtUtilHelper jwtUtilHelper;
 
@@ -33,12 +36,7 @@ public class UserController {
     public ResponseEntity<?> signin(@RequestParam String email, @RequestParam String password) {
 
         Responsedata responsetdata = new Responsedata();
-
-        // tạo key cho api
-//        SecretKey key = Jwts.SIG.HS256.key().build(); //or HS384.key() or HS512.key()
-//        String secretString = Encoders.BASE64.encode(key.getEncoded());
-//        System.out.println(secretString);
-       System.out.println(email + ", " + password);
+        System.out.println(email + ", " + password);
         if(userServiceImp.checkLogin(email, password))
         {
             Account account = userServiceImp.getAccountByEmail(email);
@@ -69,7 +67,7 @@ public class UserController {
         return new ResponseEntity<>(responsetdata, HttpStatus.NOT_FOUND);
     }
 
- //   @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
+
     @PostMapping("/detail")
     public ResponseEntity<?> getDetailUser() {
         Responsedata responsetdata = new Responsedata();
@@ -186,6 +184,13 @@ public class UserController {
         }
     }
 
-
-
+    @GetMapping("/getuserbyid/{userId}")
+    public ResponseEntity<?> getUserById(@PathVariable String userId) {
+        try {
+            AccountDetailDTO accountInfor = userServiceImp.getAccountInforById(userId);
+            return ResponseEntity.ok(new Responsedata("Lấy bài thi thành công!",accountInfor));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(NOT_FOUND).body(new Responsedata(e.getMessage(),null));
+        }
+    }
 }

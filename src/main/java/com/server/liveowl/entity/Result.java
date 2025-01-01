@@ -3,8 +3,6 @@ package com.server.liveowl.entity;
 import jakarta.persistence.*;
 import jakarta.persistence.Id;
 
-import java.util.UUID;
-
 @Entity
 public class Result {
     @Id
@@ -28,30 +26,39 @@ public class Result {
     public String getResultId() {
         return resultId;
     }
+
     public void setResultId(String resultId) {
         this.resultId = resultId;
     }
+
     public String getLinkVideo() {
         return linkVideo;
     }
+
     public void setLinkVideo(String linkVideo) {
         this.linkVideo = linkVideo;
     }
+
     public String getLinkKeyBoard() {
         return linkKeyBoard;
     }
+
     public void setLinkKeyBoard(String linkKeyBoard) {
         this.linkKeyBoard = linkKeyBoard;
     }
+
     public Account getAccount() {
         return account;
     }
+
     public void setAccount(Account account) {
         this.account = account;
     }
+
     public Exam getExam() {
         return exam;
     }
+
     public void setExam(Exam exam) {
         this.exam = exam;
     }

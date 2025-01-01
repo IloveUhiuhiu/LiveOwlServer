@@ -16,7 +16,7 @@ public class VideoServer implements Runnable {
         try {
             serverSocket = new DatagramSocket(SERVER_VIDEO_PORT);
             while (true) {
-                System.out.println("VideoServer video đang lắng nghe ...");
+                System.out.println("VideoServer video đang lắng nghe trên cổng " + SERVER_VIDEO_PORT);
                 DatagramPacket packet = UdpHandler.getPacket(serverSocket);
                 String connect = new String(packet.getData(), 0, packet.getLength());
                 executor.execute(() -> handleClient(packet, serverSocket, connect));
@@ -36,7 +36,6 @@ public class VideoServer implements Runnable {
             String code = connect.split(":")[1];
             System.out.println(clientId + " " + code);
             ++numberOfConnect;
-
             UdpHandler.sendNumber(serverSocket,numberOfConnect,packet.getAddress(),packet.getPort());
             new Thread(new ProcessSendVideo(packet,code,clientId,numberOfConnect)).start();
         } catch (IOException e) {

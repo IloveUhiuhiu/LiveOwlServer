@@ -3,19 +3,19 @@ package com.server.liveowl.dto;
 import java.util.Date;
 
 public class UserDTO {
-
-    private int id;
+    private String userId;
     private String userName;
     private String passWord;
     private String fullName;
     private Date createDate;
     private String email;
-    public int getId() {
-        return id;
+
+    public String getUserId() {
+        return userId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getUserName() {
