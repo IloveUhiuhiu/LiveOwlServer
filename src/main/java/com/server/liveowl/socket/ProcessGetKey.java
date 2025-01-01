@@ -15,11 +15,11 @@ public class ProcessGetKey implements Runnable {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREAD);
     public ProcessGetKey(ProcessGetImage processGetData) {
         this.processGetData = processGetData;
-        PORT = processGetData.getProcessId() + 2000;
+        PORT = processGetData.getProcessId() + 12345;
     }
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-       
+
             while (processGetData.isRunning()) {
                 try {
                     serverSocket.setSoTimeout(2000); 

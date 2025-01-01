@@ -4,7 +4,15 @@ import com.server.liveowl.dto.ImageDTO;
 import com.server.liveowl.payload.request.AddResultRequest;
 import com.server.liveowl.util.ResultHandler;
 import com.server.liveowl.util.UdpHandler;
+
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
+import org.opencv.videoio.Videoio;
+
+
+import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -58,8 +66,6 @@ class ProcessGetImage implements Runnable {
         addressStudents.put(clientId, thePacket.getAddress());// thêm địa chỉ vào danh sách quản lý
 
         listClientId.add(clientId);// thêm vào danh sách Id để quản lý
-
-        // thêm một videoWriter đẻ lưu video
         try {
             if (!videoWriters.containsKey(clientId)) {
                 videoWriters.put(clientId,new VideoWriter(VIDEO_PATH + "\\_" +code + "\\video_" + clientId +".mp4",
@@ -90,7 +96,7 @@ class ProcessGetImage implements Runnable {
                 processPacket(message);// xử lý packet
             }
         } catch (Exception e) {
-            System.err.println("Error in ProcessGetData: " + e.getMessage());
+
         } finally {
             cleanupResources();
             System.out.println("Close thread ProcessGetData");
