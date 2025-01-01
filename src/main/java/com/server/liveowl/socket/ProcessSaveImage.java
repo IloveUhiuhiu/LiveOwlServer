@@ -14,12 +14,13 @@ public class ProcessSaveImage implements Runnable {
     }
     public void run() {
         try {
+            // lấy ảnh từ queueSaveImage để tạo video
             while (processGetData.isRunning()) {
                 if (!processGetData.queueSaveImage.isEmpty()) {
                     ImageDTO imageDto = processGetData.queueSaveImage.poll();
                     if (imageDto.getImage() != null) {
                         System.out.println(imageDto.getClientId() + ", " + imageDto.getImage().length + " lưu video");
-                        Mat frame = byteArrayToMat(imageDto.getImage());
+                        Mat frame = byteArrayToMat(imageDto.getImage());// chuyển đổi từ mảng byte thành frame
                         if (!frame.empty()) {
                             if (processGetData.videoWriters.get(imageDto.getClientId()) != null) {
                                 processGetData.videoWriters.get(imageDto.getClientId()).write(frame);

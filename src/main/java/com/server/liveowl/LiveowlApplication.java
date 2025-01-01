@@ -9,11 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
-
 @SpringBootApplication
 public class LiveowlApplication {
 	static {
+//		System.out.println(System.getProperty("java.library.path"));
+//		System.loadLibrary("opencv_java4100");
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	}
 	public static void main(String[] args) {

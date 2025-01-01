@@ -10,11 +10,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 class ProcessGetImage implements Runnable {
-    private volatile boolean running = true;
+    private volatile boolean running = true;// biến đánh dấu cuộc họp còn đang live hay đã kết thúc
     private final int processId;
     private final String code;
     private final String examId;
@@ -24,12 +25,12 @@ class ProcessGetImage implements Runnable {
     public final InetAddress addressTeacher;
     public final int portTeacher;
 
-    public Map<String, Integer> portStudents = new HashMap<>();
-    public Map<String, InetAddress> addressStudents = new HashMap<>();
+    public Map<String, Integer> portStudents = new ConcurrentHashMap<>();
+    public Map<String, InetAddress> addressStudents = new ConcurrentHashMap<>();
 
     private Set<String> listClientId = new HashSet<>();
-    public Map<String, byte[]> imageBuffer = new HashMap<>();
-    public Map<String, VideoWriter> videoWriters = new HashMap<>();
+    public Map<String, byte[]> imageBuffer = new ConcurrentHashMap<>();
+    public Map<String, VideoWriter> videoWriters = new ConcurrentHashMap<>();
     public ConcurrentLinkedQueue<ImageDTO> queueSendImage = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<ImageDTO> queueSaveImage = new ConcurrentLinkedQueue<>();
 
@@ -53,18 +54,19 @@ class ProcessGetImage implements Runnable {
     }
 
     public void addStudent(String clientId, DatagramPacket thePacket) {
-        portStudents.put(clientId, thePacket.getPort());
-        addressStudents.put(clientId, thePacket.getAddress());
+        portStudents.put(clientId, thePacket.getPort());// thêm port vảo danh sách quản lý
+        addressStudents.put(clientId, thePacket.getAddress());// thêm địa chỉ vào danh sách quản lý
 
-        listClientId.add(clientId);
+        listClientId.add(clientId);// thêm vào danh sách Id để quản lý
 
+        // thêm một videoWriter đẻ lưu video
         try {
             if (!videoWriters.containsKey(clientId)) {
                 videoWriters.put(clientId,new VideoWriter(VIDEO_PATH + "\\_" +code + "\\video_" + clientId +".mp4",
                         VideoWriter.fourcc('H', '2', '6', '4'), ProcessSaveImage.fps,
                         new org.opencv.core.Size(ProcessSaveImage.frameWidth, ProcessSaveImage.frameHeight), true));
             } else {
-                System.out.println("client " + clientId + " đã có mặt trong videoWriters!");
+                System.out.println("Học sinh có Id là " + clientId + " đã thoát ra và vào lại!");
             }
         } catch (Exception e) {
             System.out.println("Lỗi tạo videoWriter " + e.getMessage());
@@ -84,8 +86,8 @@ class ProcessGetImage implements Runnable {
         try {
             while(isRunning()) {
                 byte[] message = new byte[MAX_DATAGRAM_PACKET_LENGTH];
-                UdpHandler.receiveBytesArr(receiveSocket,message);
-                processPacket(message);
+                UdpHandler.receiveBytesArr(receiveSocket,message);// Nhận packet này để xác định loại request
+                processPacket(message);// xử lý packet
             }
         } catch (Exception e) {
             System.err.println("Error in ProcessGetData: " + e.getMessage());
@@ -98,19 +100,19 @@ class ProcessGetImage implements Runnable {
         int packetType = (message[0] & 0xff);
         switch (packetType) {
             case 0:
-                handlePacketLength(message);
+                handlePacketLength(message);// trường hợp gửi độ dài ảnh
                 break;
             case 1:
-                handlePacketImage(message);
+                handlePacketImage(message);// trường hợp gửi mảng byte của ảnh
                 break;
             case 2:
-                handleCameraRequest(message);
+                handleCameraRequest(message);// trường hợp gửi request bật/ tắt camera
                 break;
             case 3:
-                handleTeacherExit(message);
+                handleTeacherExit(message);// trường hợp gửi request hủy cuộc họp của gv
                 break;
             case 4:
-                handleStudentExit(message);
+                handleStudentExit(message);// trường hợp gửi request thoát của hs
                 break;
             default:
                 System.err.println("Unknown packet type: " + packetType);
@@ -141,6 +143,8 @@ class ProcessGetImage implements Runnable {
                     System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (MAX_DATAGRAM_PACKET_LENGTH - 12));
                 }
                 if (isLastPacket) {
+                    // nếu mảng byte được đánh dấu là cuối cùng
+                    // thì thêm vào queue để gửi và lưu
                     queueSendImage.add(new ImageDTO(Key, imageBytes.clone()));
                     queueSaveImage.add(new ImageDTO(clientId, imageBytes.clone()));
                 }
@@ -181,13 +185,14 @@ class ProcessGetImage implements Runnable {
 
     private void cleanupResources() {
         try {
+            setRunning(false);
             if (receiveSocket != null) receiveSocket.close();
             if (sendSocket != null) sendSocket.close();
             if (imageBuffer != null)imageBuffer.clear();
             if (portStudents != null) portStudents.clear();
             if (addressStudents != null )addressStudents.clear();
             if (SocketServer.listMeeting.containsKey(code))SocketServer.listMeeting.remove(code);
-            setRunning(false);
+
         } catch (Exception e) {
             System.err.println("Error closing resources: " + e.getMessage());
         }
@@ -195,6 +200,8 @@ class ProcessGetImage implements Runnable {
 
     }
     private void handleStudentDisconnect(String clientId) {
+        // đợi 2s để packet đến hết
+        // rồi bắt đầu xóa
         new Thread(() -> {
             try {
                 Thread.sleep(2000);
@@ -205,28 +212,29 @@ class ProcessGetImage implements Runnable {
                     String key = iterator.next();
                     String clientIdTmp = key.substring(key.indexOf(":") + 1);
                     if (clientIdTmp.equals(clientId)) {
-                        System.out.println("Đã remove nhé");
                         iterator.remove();
                     }
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return;
+                System.out.println("Lỗi khi học sinh tắt kết nối + " + e.getMessage());
             }
         }).start();
     }
 
     private void handleTeacherDisconnect() {
+        // đợi 2s để packet dến hết
+        // rồi bắt đầu xóa
         new Thread(() -> {
             try {
                 Thread.sleep(2000);
                 videoWriters.forEach((integer, videoWriter) -> {
                     videoWriter.release();
-                    System.out.println("Đã giải phóng VideoWriter cho clientId: " + integer);
                 });
                 cleanupResources();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
+                System.out.println("Lỗi khi giáo viên tắt kết nối + " + e.getMessage());
             }
         }).start();
     }
@@ -243,14 +251,7 @@ class ProcessGetImage implements Runnable {
             }
             AddResultRequest request = new AddResultRequest(linkVideo,linkKeyBoard,studentId,examId);
             ResultHandler.addresult(request, token);
-            System.out.println("Add Thanh Cong");
-
-
-
-
     }
-
-
 }
 
 

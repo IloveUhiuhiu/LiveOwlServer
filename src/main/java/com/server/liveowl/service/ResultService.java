@@ -72,15 +72,15 @@ public class ResultService implements ResultServiceImp {
     @Override
     @Transactional
     public void addResult(AddResultRequest request, Account account) {
-        System.out.println("Vào service");
         List<String> studentId = request.getStudentId();
         List<String> linkVideo = request.getLinkVideo();
         List<String> linkKeyBoard = request.getLinkKeyBoard();
         String examId = request.getExamId();
         int length = request.getStudentId().size();
         for (int i = 0; i < length; i++) {
+            Result checkResult = getResultByExamIdAndAccountId(examId, studentId.get(i));
+            if (checkResult != null) continue;
             String resultId = UUID.randomUUID().toString().substring(0, 8);
-            System.out.println(examId);
             resultRepository.insertResult(
                     resultId,
                     linkVideo.get(i),
@@ -95,5 +95,13 @@ public class ResultService implements ResultServiceImp {
     @Override
     public List<Result> getResultsByAccount(Account account) {
         return resultRepository.getResultsByExamAccount(account);
+    }
+
+
+    @Override
+    public Result getResultByExamIdAndAccountId(String examId, String accountId) {
+        Exam exam = examService.getExamById(examId);
+        Account account = userService.getAccountById(accountId);
+        return resultRepository.getByExamAndAccount(exam, account);
     }
 }
