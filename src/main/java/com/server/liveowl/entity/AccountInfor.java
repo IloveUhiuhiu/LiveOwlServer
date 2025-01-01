@@ -1,12 +1,9 @@
 package com.server.liveowl.entity;
 
 import jakarta.persistence.*;
-
 import java.sql.Blob;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.UUID;
 
 @Entity
 public class AccountInfor {
@@ -52,6 +49,7 @@ public class AccountInfor {
         this.createAt = LocalDateTime.now();
         this.updateAt = LocalDateTime.now();
     }
+
     public String getAccountId() {
         return accountId;
     }

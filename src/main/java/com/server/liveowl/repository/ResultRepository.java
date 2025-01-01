@@ -1,5 +1,6 @@
 package com.server.liveowl.repository;
 import com.server.liveowl.entity.Account;
+import com.server.liveowl.entity.Exam;
 import com.server.liveowl.entity.Result;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -22,4 +23,6 @@ public interface ResultRepository extends JpaRepository<Result, String> {
                       @Param("linkKeyBoard") String linkKeyBoard,
                       @Param("accountId") String accountId,
                       @Param("examId") String examId);
+
+    Result getByExamAndAccount(Exam exam, Account account);
 }

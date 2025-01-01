@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.File;
 import java.util.List;
 
@@ -32,12 +31,14 @@ public class ResultController {
     private final ResultServiceImp resultServiceImp;
     private final JwtUtilHelper jwtUtilHelper;
     private Account account;
+
     @Autowired
     public ResultController(UserServiceImp userServiceImp, ResultServiceImp resultServiceImp, JwtUtilHelper jwtUtilHelper) {
         this.userServiceImp = userServiceImp;
         this.resultServiceImp = resultServiceImp;
         this.jwtUtilHelper = jwtUtilHelper;
     }
+
     @ModelAttribute
     public void setUserInfo(HttpServletRequest request) {
         String jwtToken = jwtUtilHelper.getTokenFromHeader(request);
@@ -45,6 +46,7 @@ public class ResultController {
         String email = jwtUtilHelper.getEmailFromToken(jwtToken);
         account = userServiceImp.getAccountByEmail(email);
     }
+
     @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/all/{examId}")
     public ResponseEntity<Responsedata> getAllResultsByExam (@PathVariable String examId) {
@@ -52,6 +54,8 @@ public class ResultController {
         List<ResultDTO> resultDTOS = resultServiceImp.getConvertedResults(results);
         return ResponseEntity.ok(new Responsedata("Lấy danh sách bài thi thành công!",resultDTOS));
     }
+
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/{resultId}")
     public ResponseEntity<Responsedata> getResultById (@PathVariable String resultId) {
         try {
@@ -63,10 +67,10 @@ public class ResultController {
         }
     }
 
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @PostMapping("/add")
     public ResponseEntity<Responsedata> addResult (@RequestBody AddResultRequest request) {
         try {
-            System.out.println("Vào Controller");
             resultServiceImp.addResult(request,account);
             return ResponseEntity.ok(new Responsedata("Thêm kết quả thành công!",null));
         } catch (Exception e) {
@@ -75,6 +79,7 @@ public class ResultController {
 
     }
 
+    @PreAuthorize("hasAuthority('ROLE_GIAO_VIEN')")
     @GetMapping("/video/{folder}/{video}")
     public ResponseEntity<FileSystemResource> getVideo(@PathVariable String folder, @PathVariable String video) {
         File videoFile = new File( ServerConfig.VIDEO_PATH + "_" + folder + "\\video_" + video + ".mp4");

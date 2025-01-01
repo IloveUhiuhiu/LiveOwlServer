@@ -190,6 +190,23 @@ public class UserService implements UserServiceImp {
     }
 
     @Override
+    public AccountDetailDTO getAccountInforById(String accountId) {
+        AccountInfor accountInfor = accountInforRepository.findByAccountId(accountId);
+        return new AccountDetailDTO(
+                accountInfor.getAccountId(),
+                null,
+                2,
+                accountInfor.getFullName(),
+                accountInfor.getDateOfBirth(),
+                accountInfor.getGender(),
+                null,
+                accountInfor.getCreateAt(),
+                accountInfor.getUpdateAt()
+        );
+
+    }
+
+    @Override
     public boolean updateInfo(String emailToken, String name, String emailnew, LocalDate dateofbirth, Boolean gender) {
         List<Account> listaccount = accountReposiroty.findByEmail(emailToken);
         if (listaccount.isEmpty())

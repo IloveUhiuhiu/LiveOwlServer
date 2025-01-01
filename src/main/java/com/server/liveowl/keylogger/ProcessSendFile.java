@@ -1,14 +1,10 @@
-
 package com.server.liveowl.keylogger;
-
 import java.io.*;
 import java.net.Socket;
-
 import static com.server.liveowl.ServerConfig.KEYBOARD_PATH;
 
 public class ProcessSendFile implements Runnable {
 private final Socket clientSocket;
-
 public ProcessSendFile(Socket clientSocket) {
     this.clientSocket = clientSocket;
 }

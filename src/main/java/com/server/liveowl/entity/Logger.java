@@ -24,24 +24,31 @@ public class Logger {
     public String getLoggerId() {
         return loggerId;
     }
+
     public void setLoggerId(String loggerId) {
         this.loggerId = loggerId;
     }
+
     public String getContentOfLogger() {
         return contentOfLogger;
     }
+
     public void setContentOfLogger(String contentOfLogger) {
         this.contentOfLogger = contentOfLogger;
     }
+
     public LocalDateTime getTimeOfLogger() {
         return timeOfLogger;
     }
+
     public void setTimeOfLogger(LocalDateTime timeOfLogger) {
         this.timeOfLogger = timeOfLogger;
     }
+
     public Result getResult() {
         return result;
     }
+
     public void setResult(Result result) {
         this.result = result;
     }
