@@ -17,8 +17,9 @@ ProcessSendImage(ProcessGetImage processGetData) throws SocketException {
 public void run() {
     try {
         while(processGetData.isRunning()) {
-            if (!processGetData.queueSaveImage.isEmpty()) {
-                ImageDTO imageDto = processGetData.queueSaveImage.poll();
+
+            if (!processGetData.queueSendImage.isEmpty()) {
+                ImageDTO imageDto = processGetData.queueSendImage.poll();
 
                 String packetId = imageDto.getClientId();
                 int pos = packetId.lastIndexOf(":");
