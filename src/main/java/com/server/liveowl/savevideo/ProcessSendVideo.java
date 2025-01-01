@@ -29,7 +29,8 @@ public class ProcessSendVideo implements Runnable {
     @Override
     public void run() {
         try {
-            VideoCapture capture = new VideoCapture(VIDEO_PATH + "\\_" + code + "\\video_" + clientId + ".mp4");
+            VideoCapture capture = new VideoCapture(VIDEO_PATH + "_" + code + "\\video_" + clientId + ".mp4");
+            System.out.println(VIDEO_PATH + "_" + code + "\\video_" + clientId + ".mp4");
             Mat frame = new Mat();
 
             if (!capture.isOpened()) {
