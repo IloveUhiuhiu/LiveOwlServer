@@ -26,7 +26,7 @@ public class ProcessGetKey implements Runnable {
                     Socket socket = serverSocket.accept();
                     threadPool.submit(() -> handleClient(socket));
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Không có kết nối mới, tiếp tục lắng nghe...");
+                    //System.out.println("Không có kết nối mới, tiếp tục lắng nghe...");
                 }
             }
         } catch (IOException e) {

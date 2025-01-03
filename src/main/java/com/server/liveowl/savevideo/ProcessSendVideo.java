@@ -62,7 +62,7 @@ public class ProcessSendVideo implements Runnable {
                     if (capture.read(frame)) {
                         byte[] data = convertMatToBytes(frame);
                         sendPacket(data);
-                        System.out.println("Đã gửi khung hình: " + frame.size());
+                        //System.out.println("Đã gửi khung hình: " + frame.size());
                     } else {
                         System.out.println("Đã hết video.");
                         break;
@@ -124,14 +124,14 @@ public class ProcessSendVideo implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Gửi kết thúc thành công");
+        //System.out.println("Gửi kết thúc thành công");
     }
     private static byte[] convertMatToBytes(Mat mat) {
         MatOfInt params = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 90);
         MatOfByte matOfByte = new MatOfByte();
         Imgcodecs.imencode(".jpg", mat, matOfByte, params);
         byte[] imageBytes = matOfByte.toArray();
-        System.out.println("Gửi ảnh có độ dài " + imageBytes.length);
+        //System.out.println("Gửi ảnh có độ dài " + imageBytes.length);
         return imageBytes;
     }
 }
