@@ -5,22 +5,27 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.videoio.VideoCapture;
+
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import static com.server.liveowl.ServerConfig.*;
-
-
 public class ProcessSendVideo implements Runnable {
     private DatagramSocket socket;
+    private DatagramSocket socketReceive;
     private InetAddress address;
     private int port;
     private String code;
     private String clientId;
     private int imageId = 0;
+    private volatile boolean isFirst = true;
+    private volatile boolean isCompleted = false;
+    private volatile boolean isPlay = false;
     ProcessSendVideo(DatagramPacket packet, String code, String clientId, int numberOfConnect) throws SocketException {
         socket = new DatagramSocket(SERVER_VIDEO_PORT + numberOfConnect);
+        socketReceive = new DatagramSocket(SERVER_VIDEO_PORT - numberOfConnect);
         address = packet.getAddress();
         port = packet.getPort();
         this.code = code;
@@ -32,21 +37,41 @@ public class ProcessSendVideo implements Runnable {
             VideoCapture capture = new VideoCapture(VIDEO_PATH + "_" + code + "\\video_" + clientId + ".mp4");
             System.out.println(VIDEO_PATH + "_" + code + "\\video_" + clientId + ".mp4");
             Mat frame = new Mat();
-
             if (!capture.isOpened()) {
                 System.out.println("Không thể mở video: " + VIDEO_PATH);
                 return;
             }
-
-            while (true) {
-                if (capture.read(frame)) {
-                    byte[] data = convertMatToBytes(frame);
-                    sendPacket(data);
-                    System.out.println("Đã gửi khung hình: " + frame.size());
-                } else {
-                    System.out.println("Đã hết video.");
-                    break;
+            new Thread(() -> {
+                while (!isCompleted) {
+                    try {
+                        String msg = UdpHandler.receiveMsg(socketReceive,address,port);
+                        if (msg.equals("play")) {
+                            isPlay = true;
+                        } else if(msg.equals("pause")) {
+                            isPlay = false;
+                        } else if(msg.equals("exit")) {
+                            isCompleted = true;
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
+
+            }).start();
+            while (!isCompleted) {
+                if (isFirst || isPlay) {
+                    if (capture.read(frame)) {
+                        byte[] data = convertMatToBytes(frame);
+                        sendPacket(data);
+                        System.out.println("Đã gửi khung hình: " + frame.size());
+                    } else {
+                        System.out.println("Đã hết video.");
+                        break;
+                    }
+                    isFirst = false;
+                    Thread.sleep(100);
+                }
+
             }
             sendCompleted();
             capture.release();
@@ -81,7 +106,6 @@ public class ProcessSendVideo implements Runnable {
                     flag = false;
                     message[3] = (byte) (0);
                 }
-
                 if (!flag) {
                     System.arraycopy(imageByteArray, i, message, 4, MAX_DATAGRAM_PACKET_LENGTH - 4);
                 } else {
@@ -90,7 +114,6 @@ public class ProcessSendVideo implements Runnable {
                 UdpHandler.sendBytesArray(socket, message, address, port);
             }
         } catch (Exception e) {
-
         }
         imageId= (imageId + 1) % 5;
     }
