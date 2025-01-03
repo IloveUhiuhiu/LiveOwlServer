@@ -16,7 +16,30 @@ public class SocketServer implements Runnable {
     private final static Logger errors = Logger.getLogger("errors");
     private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
 
+    public volatile static int countImageKiemThu = 0;
+    public volatile static int countImageKiemLast = 0;
+    public volatile static int timeRemaining = 0;
+    public volatile static int countStudent = 0;
+
     public void run() {
+        Thread countdownThread = new Thread(() -> {
+            try {
+                while (true) {
+                    if (countImageKiemThu > 0) {
+                        Thread.sleep(1000);
+                        timeRemaining++;
+                        double ans = (countImageKiemThu - countImageKiemLast)* 1.0 / (countStudent);
+                        System.out.println(countImageKiemThu + ": " + countImageKiemLast + ": " + countStudent + ": "+ ans);
+                        countImageKiemLast = countImageKiemThu;
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Luồng kiểm thử bị gián đoạn.");
+            }
+        });
+        countdownThread.start();
+
         try (DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT)){
             System.out.println("Server đang lắng nghe trên cổng " + SERVER_PORT);
             while (true) {

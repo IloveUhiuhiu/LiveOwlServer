@@ -151,6 +151,7 @@ class ProcessGetImage implements Runnable {
                 if (isLastPacket) {
                     // nếu mảng byte được đánh dấu là cuối cùng
                     // thì thêm vào queue để gửi và lưu
+                    SocketServer.countImageKiemThu++;
                     queueSendImage.add(new ImageDTO(Key, imageBytes.clone()));
                     queueSaveImage.add(new ImageDTO(clientId, imageBytes.clone()));
                 }
