@@ -165,7 +165,7 @@ class ProcessGetImage implements Runnable {
 
     private void handleCameraRequest(byte[] message) throws IOException {
         String clientId = new String(message,1,8);
-        System.out.println("request camera " + clientId);
+        //System.out.println("request camera " + clientId);
         int port = portStudents.get(clientId) - 1000;
         InetAddress address = addressStudents.get(clientId);
         UdpHandler.sendRequests(sendSocket, "camera".getBytes(), address, port);
@@ -174,7 +174,7 @@ class ProcessGetImage implements Runnable {
     private void handleTeacherExit(byte[] message) throws IOException {
         String token = new String(message,1,message.length-1);
         for (String key : portStudents.keySet()) {
-            System.out.println(addressStudents.get(key) + ", " + portStudents.get(key));
+            //System.out.println(addressStudents.get(key) + ", " + portStudents.get(key));
             UdpHandler.sendRequests(sendSocket,"exit".getBytes(), addressStudents.get(key), portStudents.get(key) - 1000);
         }
         addResult(token);

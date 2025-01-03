@@ -19,12 +19,12 @@ public class ProcessSaveImage implements Runnable {
                 if (!processGetData.queueSaveImage.isEmpty()) {
                     ImageDTO imageDto = processGetData.queueSaveImage.poll();
                     if (imageDto.getImage() != null) {
-                        System.out.println(imageDto.getClientId() + ", " + imageDto.getImage().length + " lưu video");
+                        //System.out.println(imageDto.getClientId() + ", " + imageDto.getImage().length + " lưu video");
                         Mat frame = byteArrayToMat(imageDto.getImage());// chuyển đổi từ mảng byte thành frame
                         if (!frame.empty()) {
                             if (processGetData.videoWriters.get(imageDto.getClientId()) != null) {
                                 processGetData.videoWriters.get(imageDto.getClientId()).write(frame);
-                                System.out.println("Đã ghi khung hình vào video.");
+                                //System.out.println("Đã ghi khung hình vào video.");
                             }
                         } else {
                             System.err.println("Khung hình trống, không ghi vào video.");
@@ -52,7 +52,7 @@ public class ProcessSaveImage implements Runnable {
         if (mat.empty()) {
             System.out.println("Không thể chuyển đổi byte array thành Mat");
         } else {
-            System.out.println("Kích thước khung hình: " + mat.size());
+            //System.out.println("Kích thước khung hình: " + mat.size());
         }
         return mat;
     }
