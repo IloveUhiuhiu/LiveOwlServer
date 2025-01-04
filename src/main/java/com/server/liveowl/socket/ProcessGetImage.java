@@ -2,17 +2,10 @@ package com.server.liveowl.socket;
 import static com.server.liveowl.ServerConfig.*;
 import com.server.liveowl.dto.ImageDTO;
 import com.server.liveowl.payload.request.AddResultRequest;
+import com.server.liveowl.util.ImageHandler;
 import com.server.liveowl.util.ResultHandler;
 import com.server.liveowl.util.UdpHandler;
-
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.VideoWriter;
-import org.opencv.videoio.Videoio;
-
-
-import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -38,6 +31,7 @@ class ProcessGetImage implements Runnable {
 
     private Set<String> listClientId = new HashSet<>();
     public Map<String, byte[]> imageBuffer = new ConcurrentHashMap<>();
+    public Map<String, byte[]> lastImage = new ConcurrentHashMap<>();
     public Map<String, VideoWriter> videoWriters = new ConcurrentHashMap<>();
     public ConcurrentLinkedQueue<ImageDTO> queueSendImage = new ConcurrentLinkedQueue<>();
     public ConcurrentLinkedQueue<ImageDTO> queueSaveImage = new ConcurrentLinkedQueue<>();
@@ -125,44 +119,53 @@ class ProcessGetImage implements Runnable {
         }
     }
     private void handlePacketLength(byte[] message) {
-        String clientId = new String(message,1,8);
+        String clientId = new String(message, 1, 8);
         int imageId = (message[9] & 0xff);
-        int lengthOfImage = (message[10] & 0xff) << 16 | (message[11] & 0xff) << 8 | (message[12] & 0xff);
+        int lengthOfImage = ((message[10] & 0xff) << 16) | ((message[11] & 0xff) << 8) | (message[12] & 0xff);
         byte[] imageBytes = new byte[lengthOfImage];
-        String Key = imageId + ":" + clientId;
-        imageBuffer.put(Key, imageBytes);
+        imageBuffer.put(imageId + ":" + clientId, imageBytes);
     }
+
     private void handlePacketImage(byte[] message) {
-        String clientId = new String(message,1,8);
+        String clientId = new String(message, 1, 8);
         int packetId = (message[9] & 0xff);
         int sequenceNumber = (message[10] & 0xff);
         boolean isLastPacket = ((message[11] & 0xff) == 1);
         int destinationIndex = (sequenceNumber - 1) * (MAX_DATAGRAM_PACKET_LENGTH - 12);
-        String Key = packetId + ":" + clientId;
-        if (imageBuffer.containsKey(Key)) {
-            int lengthOfImage = imageBuffer.get(Key).length;
-            byte[] imageBytes = imageBuffer.get(Key);
-            if (destinationIndex >= 0 && destinationIndex < lengthOfImage) {
-                if (!isLastPacket && (destinationIndex + (MAX_DATAGRAM_PACKET_LENGTH - 12) < lengthOfImage)) {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, MAX_DATAGRAM_PACKET_LENGTH - 12);
-                } else {
-                    System.arraycopy(message, 12, imageBytes, destinationIndex, lengthOfImage % (MAX_DATAGRAM_PACKET_LENGTH - 12));
-                }
-                if (isLastPacket) {
-                    // nếu mảng byte được đánh dấu là cuối cùng
-                    // thì thêm vào queue để gửi và lưu
-                    SocketServer.countImageKiemThu++;
-                    queueSendImage.add(new ImageDTO(Key, imageBytes.clone()));
-                    queueSaveImage.add(new ImageDTO(clientId, imageBytes.clone()));
-                }
+
+        byte[] imageBytes = imageBuffer.get(packetId + ":" + clientId);
+        if (imageBytes != null) {
+            int copyLength = Math.min(MAX_DATAGRAM_PACKET_LENGTH - 12, imageBytes.length - destinationIndex);
+            // Kiểm tra tính hợp lệ của copyLength và đảm bảo không vượt quá giới hạn
+            if (copyLength > 0) {
+                System.arraycopy(message, 12, imageBytes, destinationIndex, copyLength);
             } else {
-                System.err.println("Error destinationIndex: " + destinationIndex + ", lengthOfimage" + lengthOfImage);
+                System.err.println("Invalid copy length: " + copyLength);
+                return;
+            }
+            if (isLastPacket) {
+                // Kiểm tra nếu ảnh có thể được chuyển thành Image hợp lệ
+                if (ImageHandler.canConvertToImage(imageBytes)) {
+                    // Lưu ảnh vào lastImage nếu hợp lệ
+                    lastImage.put(clientId, imageBytes);
+                } else {
+                    byte[] lastImageBytes = lastImage.get(clientId);
+                    // Nếu không có lastImage, sử dụng ảnh trước đó nếu có
+                    if (lastImageBytes != null) {
+                        imageBytes = lastImageBytes;
+                    } else {
+                        System.err.println("Không tìm thấy ảnh trước đó cho clientId: " + clientId);
+                        return;
+                    }
+                }
+                // Thêm ảnh vào các hàng đợi để gửi và lưu trữ
+                queueSendImage.add(new ImageDTO(packetId + ":" + clientId, imageBytes.clone()));
+                queueSaveImage.add(new ImageDTO(clientId, imageBytes.clone()));
             }
         } else {
-            System.err.println("Not found" + Key + " in imageBuffer!");
+            System.err.println("Không tìm thấy packetId cho " + clientId);
         }
     }
-
     private void handleCameraRequest(byte[] message) throws IOException {
         String clientId = new String(message,1,8);
         //System.out.println("request camera " + clientId);
@@ -193,13 +196,12 @@ class ProcessGetImage implements Runnable {
     private void cleanupResources() {
         try {
             setRunning(false);
+            if (imageBuffer != null) imageBuffer.clear();
+            if (portStudents != null) portStudents.clear();
+            if (addressStudents != null) addressStudents.clear();
             if (receiveSocket != null) receiveSocket.close();
             if (sendSocket != null) sendSocket.close();
-            if (imageBuffer != null)imageBuffer.clear();
-            if (portStudents != null) portStudents.clear();
-            if (addressStudents != null )addressStudents.clear();
-            if (SocketServer.listMeeting.containsKey(code))SocketServer.listMeeting.remove(code);
-
+            SocketServer.listMeeting.remove(code);
         } catch (Exception e) {
             System.err.println("Error closing resources: " + e.getMessage());
         }

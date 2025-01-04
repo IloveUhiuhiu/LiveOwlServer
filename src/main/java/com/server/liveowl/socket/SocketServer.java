@@ -15,28 +15,8 @@ public class SocketServer implements Runnable {
     private final static Logger audit = Logger.getLogger("requests");
     private final static Logger errors = Logger.getLogger("errors");
     private ExecutorService executor = Executors.newFixedThreadPool(NUM_OF_THREAD);
-    public volatile static int countImageKiemThu = 0;
-    public volatile static int countImageKiemLast = 0;
-    public volatile static int timeRemaining = 0;
-    public volatile static int countStudent = 0;
     public void run() {
-        Thread countdownThread = new Thread(() -> {
-            try {
-                while (true) {
-                    if (countImageKiemThu > 0) {
-                        Thread.sleep(1000);
-                        timeRemaining++;
-                        double ans = (countImageKiemThu - countImageKiemLast)* 1.0 / (countStudent);
-                        System.out.println(countImageKiemThu + ": " + countImageKiemLast + ": " + countStudent + ": "+ ans);
-                        countImageKiemLast = countImageKiemThu;
-                    }
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Luồng kiểm thử bị gián đoạn.");
-            }
-        });
-        countdownThread.start();
+        //new ProscessTesting().start();
         try (DatagramSocket serverSocket = new DatagramSocket(SERVER_PORT)){
             System.out.println("Server đang lắng nghe trên cổng " + SERVER_PORT);
             while (true) {
@@ -47,8 +27,8 @@ public class SocketServer implements Runnable {
         } catch (Exception e) {
             System.err.println("Lỗi server: " + e.getMessage());
         } finally {
-            executor.shutdown();
             listMeeting.clear();
+            executor.shutdown();
         }
     }
 
@@ -67,7 +47,7 @@ public class SocketServer implements Runnable {
                 // kiểm tra listmeeting có chứa code không
                 // nếu không thì gửi chuỗi fail
                 // nếu có thì gửi chuỗi success
-                System.out.println("Student gửi mã: " + code);
+                System.out.println("Student có mã " + clientId + " gửi mã: " + code);
                 if (!SocketServer.listMeeting.containsKey(code)) {
                     UdpHandler.sendMsg(serverSocket,"fail",address,port);
                 } else {
@@ -76,10 +56,11 @@ public class SocketServer implements Runnable {
                 ProcessGetImage processGetImage = listMeeting.get(code);// lấy luồng xử lý cuộc họp
                 processGetImage.addStudent(clientId, packet);// thêm học sinh vào luồng để quản lý
                 UdpHandler.sendNumber(serverSocket,processGetImage.getProcessId(),address,port);// gửi lại cổng mới cho hs
-                ++countStudent;
+                // ++countStudent;
             } else if (role.equals("teacher")) {
                 // nếu là giáo viên
                 // tạo luồng nhận, gửi, lưu ảnh và nhận key
+                System.out.println("Giáo viên có mã " + clientId + " gửi mã: " + code);
                 ++numberOfConnect;
                 ProcessGetImage processGetImage = new ProcessGetImage(packet,code,clientId,numberOfConnect);
                 ProcessSendImage processSendImage = new ProcessSendImage(processGetImage);
