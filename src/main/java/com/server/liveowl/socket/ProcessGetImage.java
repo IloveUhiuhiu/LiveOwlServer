@@ -82,7 +82,6 @@ class ProcessGetImage implements Runnable {
     }
 
     public void run() {
-
         try {
             while(isRunning()) {
                 byte[] message = new byte[MAX_DATAGRAM_PACKET_LENGTH];
@@ -193,7 +192,7 @@ class ProcessGetImage implements Runnable {
         handleStudentDisconnect(clientId);
     }
 
-    private void cleanupResources() {
+    public void cleanupResources() {
         try {
             setRunning(false);
             if (imageBuffer != null) imageBuffer.clear();
@@ -210,7 +209,7 @@ class ProcessGetImage implements Runnable {
 
 
     }
-    private void handleStudentDisconnect(String clientId) {
+    public void handleStudentDisconnect(String clientId) {
         // đợi 2s để packet đến hết
         // rồi bắt đầu xóa
         new Thread(() -> {
@@ -233,7 +232,7 @@ class ProcessGetImage implements Runnable {
         }).start();
     }
 
-    private void handleTeacherDisconnect() {
+    public void handleTeacherDisconnect() {
         // đợi 2s để packet dến hết
         // rồi bắt đầu xóa
         new Thread(() -> {
@@ -250,7 +249,7 @@ class ProcessGetImage implements Runnable {
         }).start();
     }
 
-    private void addResult(String token) {
+    public void addResult(String token) {
 
             List<String> studentId = new ArrayList<>();
             List<String> linkVideo = new ArrayList<>();

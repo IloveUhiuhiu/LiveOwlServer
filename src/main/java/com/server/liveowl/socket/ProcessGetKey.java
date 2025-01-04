@@ -22,7 +22,7 @@ public class ProcessGetKey implements Runnable {
 
             while (processGetData.isRunning()) {
                 try {
-                    serverSocket.setSoTimeout(2000); 
+                    serverSocket.setSoTimeout(2000);
                     Socket socket = serverSocket.accept();
                     threadPool.submit(() -> handleClient(socket));
                 } catch (SocketTimeoutException e) {
@@ -39,7 +39,7 @@ public class ProcessGetKey implements Runnable {
 
     private void handleClient(Socket socket) {
         String clientId = "";
-        try (InputStream inputStream = socket.getInputStream(); 
+        try (InputStream inputStream = socket.getInputStream();
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             clientId = reader.readLine();
             if (clientId == null) {
@@ -68,4 +68,7 @@ public class ProcessGetKey implements Runnable {
     }
 
 }
+
+
+
 
