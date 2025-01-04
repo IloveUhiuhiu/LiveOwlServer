@@ -202,6 +202,8 @@ class ProcessGetImage implements Runnable {
             if (receiveSocket != null) receiveSocket.close();
             if (sendSocket != null) sendSocket.close();
             SocketServer.listMeeting.remove(code);
+            System.out.println("SocketServer.listMeeting.size" + SocketServer.listMeeting.size());
+            System.out.println("Xóa dữ liệu thành công");
         } catch (Exception e) {
             System.err.println("Error closing resources: " + e.getMessage());
         }
