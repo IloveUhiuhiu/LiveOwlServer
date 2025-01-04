@@ -6,34 +6,56 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import static com.server.liveowl.ServerConfig.*;
 
+
 public class ProcessGetKey implements Runnable {
-    private ProcessGetImage processGetData;
+    private final ProcessGetImage processGetData;
     private static int PORT;
+    private ServerSocket serverSocket;
     private final ExecutorService threadPool = Executors.newFixedThreadPool(NUM_OF_THREAD);
+
     public ProcessGetKey(ProcessGetImage processGetData) {
         this.processGetData = processGetData;
         PORT = processGetData.getProcessId() + 12345;
     }
-    public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 
-            while (processGetData.isRunning()) {
-                try {
-                    serverSocket.setSoTimeout(2000);
-                    Socket socket = serverSocket.accept();
-                    threadPool.submit(() -> handleClient(socket));
-                } catch (SocketTimeoutException e) {
-                    //System.out.println("Không có kết nối mới, tiếp tục lắng nghe...");
+    @Override
+    public void run() {
+        while (true) {
+            synchronized (processGetData) {
+                while (!processGetData.isRunning()) {
+                    try {
+                        System.out.println("Dịch vụ tạm dừng, chờ bật lại...");
+                        processGetData.wait(); // Chờ cho đến khi isRunning là true
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return; // Thoát nếu bị gián đoạn
+                    }
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            threadPool.shutdown();
-            System.out.println("Close thread ProcessGetKey");
+
+            // Khởi động ServerSocket
+            try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+                this.serverSocket = serverSocket;
+                System.out.println("Dịch vụ bắt đầu lắng nghe trên cổng " + PORT);
+                while (processGetData.isRunning()) {
+                    try {
+                        serverSocket.setSoTimeout(2000); // Timeout ngắn để kiểm tra trạng thái
+                        Socket socket = serverSocket.accept();
+                        System.out.println("Socket accepted");
+                        threadPool.submit(() -> handleClient(socket));
+                    } catch (SocketTimeoutException e) {
+                        // Tiếp tục lắng nghe nếu timeout
+                    }
+                }
+            } catch (IOException e) {
+                if (processGetData.isRunning()) {
+                    e.printStackTrace();
+                }
+            } finally {
+                System.out.println("Dịch vụ dừng lại.");
+            }
         }
     }
 
@@ -51,6 +73,7 @@ public class ProcessGetKey implements Runnable {
             try (FileWriter writer = new FileWriter(logFilePath, true)) {
                 String keyStroke;
                 while ((keyStroke = reader.readLine()) != null) {
+                    System.out.println("key nhận được: " + keyStroke);
                     writer.write(keyStroke);
                     writer.flush();
                 }
@@ -67,8 +90,9 @@ public class ProcessGetKey implements Runnable {
         }
     }
 
+    public void signalStateChange() {
+        synchronized (processGetData) {
+            processGetData.notifyAll();
+        }
+    }
 }
-
-
-
-
