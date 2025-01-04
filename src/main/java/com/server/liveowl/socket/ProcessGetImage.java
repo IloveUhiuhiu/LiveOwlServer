@@ -149,6 +149,7 @@ class ProcessGetImage implements Runnable {
                     // Lưu ảnh vào lastImage nếu hợp lệ
                     lastImage.put(clientId, imageBytes);
                 } else {
+                    System.out.println("ẹc");
                     byte[] lastImageBytes = lastImage.get(clientId);
                     // Nếu không có lastImage, sử dụng ảnh trước đó nếu có
                     if (lastImageBytes != null) {
